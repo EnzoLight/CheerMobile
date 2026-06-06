@@ -11,7 +11,9 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+//import androidx.compose.ui.unit.vazir
 import androidx.compose.ui.unit.sp
 import com.cheermobile.ui.theme.*
 
@@ -69,7 +71,8 @@ fun LoginScreen(
                     label = { Text("E-mail") },
                     modifier = Modifier.fillMaxWidth(),
                     shape = RoundedCornerShape(12.dp),
-                    colors = TextFieldDefaults.outlinedTextFieldColors(
+                    // Correção das cores para o Material 3 padrão:
+                    colors = OutlinedTextFieldDefaults.colors(
                         unfocusedBorderColor = CheerBrandBorder,
                         focusedBorderColor = CheerPrimary
                     )
@@ -83,7 +86,8 @@ fun LoginScreen(
                     label = { Text("Código OTP") },
                     modifier = Modifier.fillMaxWidth(),
                     shape = RoundedCornerShape(12.dp),
-                    colors = TextFieldDefaults.outlinedTextFieldColors(
+                    // Correção das cores para o Material 3 padrão:
+                    colors = OutlinedTextFieldDefaults.colors(
                         unfocusedBorderColor = CheerBrandBorder,
                         focusedBorderColor = CheerPrimary
                     )
@@ -112,4 +116,15 @@ fun LoginScreen(
             }
         }
     }
+}
+
+// O Preview correto fica aqui embaixo, sem parâmetros impeditivos:
+@Preview(showBackground = true)
+@Composable
+fun LoginScreenPreview() {
+    // Passamos lambdas vazias {} apenas para o Preview renderizar a parte visual
+    LoginScreen(
+        onLoginClick = { email, otp -> },
+        onRegisterClick = {}
+    )
 }
