@@ -33,6 +33,7 @@ android {
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_11
         targetCompatibility = JavaVersion.VERSION_11
+        isCoreLibraryDesugaringEnabled = true
     }
     buildFeatures {
         compose = true
@@ -49,6 +50,9 @@ dependencies {
     // Corrotinas (para chamadas assíncronas)
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.7.3")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.7.3")
+
+
+    coreLibraryDesugaring("com.android.tools.desugar_jdk_libs:2.x.x")
 
 
     implementation("com.google.code.gson:gson:2.10.1")

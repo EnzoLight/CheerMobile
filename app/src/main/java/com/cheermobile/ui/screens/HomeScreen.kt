@@ -25,7 +25,8 @@ import com.cheermobile.ui.theme.*
 @Composable
 fun HomeScreen(
     onNavigateToEvents: () -> Unit,
-    onNavigateToRegister: () -> Unit
+    onNavigateToRegister: () -> Unit,
+    onNavigateToRegisterInstituicao: () -> Unit
 ) {
     LazyColumn(
         modifier = Modifier

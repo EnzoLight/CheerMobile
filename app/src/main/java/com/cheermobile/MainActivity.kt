@@ -38,6 +38,9 @@ class MainActivity : ComponentActivity() {
                                 },
                                 onNavigateToRegister = {
                                     currentScreen = "login"
+                                },
+                                onNavigateToRegisterInstituicao = {
+                                    currentScreen = "cadastro_instituicao"
                                 }
                             )
                             "eventos" -> EventosScreen(
@@ -54,6 +57,13 @@ class MainActivity : ComponentActivity() {
                                     }
                                 },
                                 onRegisterClick = { /* Navegar para registro */ }
+                            )
+                            "cadastro_instituicao" -> CadastroInstituicaoScreen(
+                                onBackClick = {currentScreen = "home"},
+                                onSucessNavigate = { currentScreen = "login"}
+                            )
+                            "criar_evento" -> CriarEventoScreen(
+                                onBackClick = { currentScreen = "home"}
                             )
                         }
                     }

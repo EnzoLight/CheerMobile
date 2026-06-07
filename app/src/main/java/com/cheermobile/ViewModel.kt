@@ -10,6 +10,26 @@ import com.cheermobile.retrofit.RetrofitClient
 
 class MyViewModel : ViewModel() {
 
+
+
+    fun registerInstituicao(request: RegisterInstituicaoRequest, onResult: (Boolean,String) -> Unit) {
+        viewModelScope.launch {
+            try {
+                val response = RetroFitClient.instance.registerInstituicao(request)
+                if (response.isSucessful) {
+                    val authResponse = response.body()
+                    onResult(true, authResponse?.message ?: "Instituição cadastrada com sucesso!")
+                } else {
+                    val errorBody = response.errorBody()?.string() ?: ""
+                    onResult(false, "Erro no cadastro: $errorBody")
+                }
+                } catch (e: Exception) {
+                    onResult(false, "Erro de rede: Verifique sua conexão à internet")
+                }
+            }
+        }
+    
+
     // função cadastro
     fun registerNewVoluntario(request: RegisterVoluntarioRequest) {
         viewModelScope.launch {
@@ -50,6 +70,36 @@ class MyViewModel : ViewModel() {
             }
         }
     }
+
+    fun createEvento(request: CreateEventoRequest, onResult: (Boolean, String) -> Unit) {
+        viewModelScope.launch {
+        try {
+            val response = RetrofitClient.instance.createEvento(request)
+            if (response.isSuccessful) {
+                onResult(true, response.body()?.message ?: "Evento criado com sucesso.")
+            } else {
+                onResult(false, "Erro ao criar evento: ${response.errorBody()?.string()}")
+            }
+        } catch (e: Exception) {
+            onResult(false, "Erro de rede: Verifique sua conexão à internet")
+        }
+    }
+}
+ 
+fun getMeusEventos(onResult: (Boolean, List<Evento>, String?) -> Unit) {
+    viewModelScope.launch {
+        try {
+            val response = RetrofitClient.instance.getMeusEventos()
+            if (response.isSuccessful) {
+                onResult(true, response.body()?.data ?: emptyList(), null)
+            } else {
+                onResult(false, emptyList(), "Não foi possível carregar os eventos.")
+            }
+        } catch (e: Exception) {
+            onResult(false, emptyList(), "Erro de rede: Verifique sua conexão à internet")
+        }
+    }
+}
 
 
 

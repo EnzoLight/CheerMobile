@@ -19,11 +19,20 @@ interface CheerApiService {
     @POST("auth/login")
     suspend fun login(@Body request: LoginRequest): Response<AuthResponse>
 
+    @POST("auth/register-instituicao")
+    suspend fun registerInstituicao(@Body request: RegisterInstituicaoRequest): Response<AuthResponse>
+
     @GET("me")
     suspend fun getMe(): Response<User>
 
     @GET("eventos")
     suspend fun getEventos(): Response<List<Evento>>
 
+    @POST("eventos")
+    suspend fun createEvento(@Body request: CreateEventoRequest): Response<CreateEventoResponse>
+
+    @GET("instituicao/eventos")
+    suspend fun getMeusEventos(): Response<MeusEventosResponse>
+    
     // Adicione outros endpoints conforme necessário
 }
