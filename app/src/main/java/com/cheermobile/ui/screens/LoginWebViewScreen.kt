@@ -1,5 +1,6 @@
 package com.cheermobile.ui.screens
 
+import android.net.Uri
 import android.webkit.WebResourceRequest
 import android.webkit.WebView
 import android.webkit.WebViewClient
@@ -7,16 +8,18 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.viewinterop.AndroidView
+import com.cheermobile.retrofit.RetrofitClient
 
 @Composable
 fun LoginWebViewScreen(
     onLoginSuccess: (String) -> Unit,
     onBack: () -> Unit
 ) {
-    // Use the MOBILE login endpoint — Authentik will redirect back to
-    // cheer://auth/callback?code=... which MainActivity intercepts.
-    val loginUrl = "https://cheerapi.astrum.app.br/api/auth/mobile/login" +
-            "?redirect_uri=cheer%3A%2F%2Fauth%2Fcallback"
+    val loginUrl = Uri.parse("${RetrofitClient.API_ORIGIN}/api/auth/mobile/login")
+        .buildUpon()
+        .appendQueryParameter("redirect_uri", "cheer://auth/callback")
+        .build()
+        .toString()
 
     AndroidView(
         modifier = Modifier.fillMaxSize(),

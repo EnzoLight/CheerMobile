@@ -48,5 +48,13 @@ data class CreateEventoResponse(
  
  // Lista de meus Eventos
 data class MeusEventosResponse(
-    val data: List<Evento>,
+    val status: String? = null,
+    val data: List<Evento> = emptyList(),
+    val message: String? = null,
+)
+
+data class EventosResponse(
+    val status: String? = null,
+    val data: List<Evento> = emptyList(),
+    val message: String? = null,
 )

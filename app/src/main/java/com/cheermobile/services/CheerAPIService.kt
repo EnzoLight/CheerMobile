@@ -12,6 +12,7 @@ import com.cheermobile.models.CreateEventoResponse
 import com.cheermobile.models.LoginRequest
 import com.cheermobile.models.User
 import com.cheermobile.models.Evento
+import com.cheermobile.models.EventosResponse
 import com.cheermobile.models.MeusEventosResponse
 import com.cheermobile.models.MobileExchangeRequest
 import com.cheermobile.models.RegisterInstituicaoRequest
@@ -26,14 +27,14 @@ interface CheerApiService {
     suspend fun registerInstituicao(@Body request: RegisterInstituicaoRequest): Response<AuthResponse>
 
     // Exchanges the one-time mobile code for a session cookie
-    @POST("api/auth/mobile/exchange")
+    @POST("auth/mobile/exchange")
     suspend fun mobileExchange(@Body request: MobileExchangeRequest): Response<UserProfileResponse>
 
-    @GET("api/me")
+    @GET("me")
     suspend fun getMe(): Response<UserProfileResponse>
 
     @GET("eventos")
-    suspend fun getEventos(): Response<List<Evento>>
+    suspend fun getEventos(): Response<EventosResponse>
 
     @POST("eventos")
     suspend fun createEvento(@Body request: CreateEventoRequest): Response<CreateEventoResponse>

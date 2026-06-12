@@ -1,31 +1,37 @@
 package com.cheermobile.retrofit
 
+import android.content.Context
 import com.cheermobile.services.CheerApiService
-import okhttp3.JavaNetCookieJar
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
-import java.net.CookieManager
-import java.net.CookiePolicy
 
 object RetrofitClient {
 
-    private const val BASE_URL = "https://cheerapi.astrum.app.br/api/" // Substitua pela URL real da sua API
+    const val API_ORIGIN = "https://cheerapi.astrum.app.br"
+    private const val BASE_URL = "$API_ORIGIN/api/"
+
+    private var applicationContext: Context? = null
+
+    fun init(context: Context) {
+        applicationContext = context.applicationContext
+    }
 
     private val loggingInterceptor = HttpLoggingInterceptor( ).apply {
         setLevel(HttpLoggingInterceptor.Level.BODY) // Para ver os logs completos das requisições e respostas
     }
 
-    val client = OkHttpClient.Builder()
-        .cookieJar(JavaNetCookieJar(CookieManager().apply {
-            setCookiePolicy(CookiePolicy.ACCEPT_ALL)
-        }))
-        .build()
+    private val okHttpClient: OkHttpClient by lazy {
+        val context = requireNotNull(applicationContext) {
+            "RetrofitClient.init(context) must be called before using the API."
+        }
 
-    private val okHttpClient = OkHttpClient.Builder()
-        .addInterceptor(loggingInterceptor)
-        .build()
+        OkHttpClient.Builder()
+            .cookieJar(SharedPreferencesCookieJar(context))
+            .addInterceptor(loggingInterceptor)
+            .build()
+    }
 
     val instance: CheerApiService by lazy {
         Retrofit.Builder()

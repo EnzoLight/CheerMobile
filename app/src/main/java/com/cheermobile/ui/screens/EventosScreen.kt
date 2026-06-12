@@ -26,6 +26,7 @@ import com.cheermobile.ui.theme.*
 fun EventosScreen(
     eventos: List<Evento>,
     isLoading: Boolean,
+    errorMessage: String? = null,
     onBackClick: () -> Unit
 ) {
     Scaffold(
@@ -74,6 +75,10 @@ fun EventosScreen(
             if (isLoading) {
                 Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                     CircularProgressIndicator(color = CheerPrimary)
+                }
+            } else if (errorMessage != null) {
+                Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                    Text(errorMessage, color = CheerMutedText, textAlign = TextAlign.Center)
                 }
             } else if (eventos.isEmpty()) {
                 Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {

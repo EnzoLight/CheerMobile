@@ -1,7 +1,9 @@
 package com.cheermobile
 
 import android.content.Intent
+import android.net.Uri
 import android.os.Bundle
+import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
@@ -13,37 +15,29 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.cheermobile.models.Evento
+import com.cheermobile.retrofit.RetrofitClient
 import com.cheermobile.ui.screens.*
 import com.cheermobile.ui.theme.CheerMobileTheme
 
 class MainActivity : ComponentActivity() {
-
-    // Holds a deep-link code that arrived before the UI was ready
-    private var pendingDeepLinkCode: String? = null
+    private val mobileCallbackUri = mutableStateOf<Uri?>(null)
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-
-        // Capture a deep-link code if the app was cold-started via cheer://auth/callback
-        pendingDeepLinkCode = intent?.data
-            ?.takeIf { it.scheme == "cheer" && it.host == "auth" }
-            ?.getQueryParameter("code")
-
+        RetrofitClient.init(applicationContext)
+        mobileCallbackUri.value = intent?.data
         enableEdgeToEdge()
         setContent {
             CheerMobileTheme {
                 val myViewModel: MyViewModel = viewModel()
                 var currentScreen by remember { mutableStateOf("home") }
+                val callbackUri = mobileCallbackUri.value
 
-                // If the activity was launched by a deep link while already running,
-                // onNewIntent fires and sets this flag so the exchange can be triggered.
-                var deepLinkCode by remember { mutableStateOf(pendingDeepLinkCode) }
-
-                // Exchange deep-link code as soon as we have one
-                LaunchedEffect(deepLinkCode) {
-                    val code = deepLinkCode ?: return@LaunchedEffect
-                    deepLinkCode = null
-                    exchangeMobileCode(myViewModel, code) { screen -> currentScreen = screen }
+                LaunchedEffect(callbackUri) {
+                    callbackUri?.let { uri ->
+                        exchangeMobileCallback(myViewModel, uri) { screen -> currentScreen = screen }
+                        mobileCallbackUri.value = null
+                    }
                 }
 
                 Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
@@ -54,16 +48,26 @@ class MainActivity : ComponentActivity() {
                             )
 
                             "login" -> LoginScreen(
-                                onLoginExternalClick = { currentScreen = "login_webview" },
+                                onLoginExternalClick = {
+                                    myViewModel.startMobileLogin(this@MainActivity) { success, message ->
+                                        if (!success) {
+                                            Toast.makeText(this@MainActivity, message, Toast.LENGTH_SHORT).show()
+                                            currentScreen = "login_webview"
+                                        }
+                                    }
+                                },
                                 onNavigateToInstitutionRegister = { currentScreen = "cadastro_instituicao" },
                                 onNavigateToVolunteerRegister = { currentScreen = "cadastro_voluntario" }
                             )
 
                             "login_webview" -> LoginWebViewScreen(
                                 onLoginSuccess = { code ->
-                                    // The WebView intercepted cheer://auth/callback?code=...
-                                    // Exchange the one-time code for a real session
-                                    exchangeMobileCode(myViewModel, code) { screen ->
+                                    val callbackUri = Uri.parse("cheer://auth/callback")
+                                        .buildUpon()
+                                        .appendQueryParameter("code", code)
+                                        .build()
+
+                                    exchangeMobileCallback(myViewModel, callbackUri) { screen ->
                                         currentScreen = screen
                                     }
                                 },
@@ -72,10 +76,25 @@ class MainActivity : ComponentActivity() {
 
                             "eventos" -> {
                                 val listaDeEventos = remember { mutableStateListOf<Evento>() }
-                                var estaCarregando by remember { mutableStateOf(false) }
+                                var estaCarregando by remember { mutableStateOf(true) }
+                                var erroEventos by remember { mutableStateOf<String?>(null) }
+
+                                LaunchedEffect(Unit) {
+                                    estaCarregando = true
+                                    myViewModel.getEventos { success, resultado, erro ->
+                                        estaCarregando = false
+                                        erroEventos = if (success) null else erro
+                                        listaDeEventos.clear()
+                                        if (success) {
+                                            listaDeEventos.addAll(resultado)
+                                        }
+                                    }
+                                }
+
                                 EventosScreen(
                                     eventos = listaDeEventos,
                                     isLoading = estaCarregando,
+                                    errorMessage = erroEventos,
                                     onBackClick = { currentScreen = "home" }
                                 )
                             }
@@ -100,33 +119,22 @@ class MainActivity : ComponentActivity() {
         }
     }
 
-    // Called when the app is already running and receives a new deep-link intent
     override fun onNewIntent(intent: Intent) {
         super.onNewIntent(intent)
         setIntent(intent)
-        // The LaunchedEffect above will pick this up on the next recomposition
-        // via the state variable; we store it so the composable can react.
-        intent.data
-            ?.takeIf { it.scheme == "cheer" && it.host == "auth" }
-            ?.getQueryParameter("code")
-            ?.let { pendingDeepLinkCode = it }
+        mobileCallbackUri.value = intent.data
     }
 
-    // ---------------------------------------------------------------------------
-    // Helpers
-    // ---------------------------------------------------------------------------
-
-    private fun exchangeMobileCode(
+    private fun exchangeMobileCallback(
         vm: MyViewModel,
-        code: String,
+        uri: Uri,
         navigate: (String) -> Unit
     ) {
-        vm.exchangeMobileCode(code) { success, perfil, _ ->
+        vm.handleMobileCallback(uri) { success, perfil, message ->
+            Toast.makeText(this, message, Toast.LENGTH_SHORT).show()
             if (success && perfil != null) {
                 navigate(if (perfil.tipo == "instituicao") "criar_evento" else "eventos")
             }
-            // If it fails the user stays on whatever screen they were on;
-            // the ViewModel can surface an error message if needed.
         }
     }
 }

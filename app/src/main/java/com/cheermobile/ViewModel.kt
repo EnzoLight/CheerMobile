@@ -1,5 +1,8 @@
 package com.cheermobile
 
+import android.content.Context
+import android.content.Intent
+import android.net.Uri
 import com.cheermobile.models.RegisterInstituicaoRequest
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -13,8 +16,10 @@ import com.cheermobile.models.UserProfileData
 import com.cheermobile.models.MobileExchangeRequest
 //import com.cheermobile.models.RegisterInstituicaoRequest
 import com.cheermobile.retrofit.RetrofitClient
+import java.util.UUID
 
 class MyViewModel : ViewModel() {
+    private var pendingMobileState: String? = null
 
 
     // Em com.cheermobile.MyViewModel.kt
@@ -110,6 +115,69 @@ class MyViewModel : ViewModel() {
         }
     }
 
+    fun getEventos(onResult: (Boolean, List<Evento>, String?) -> Unit) {
+        viewModelScope.launch {
+            try {
+                val response = RetrofitClient.instance.getEventos()
+                val responseBody = response.body()
+
+                if (response.isSuccessful && responseBody?.status != "error") {
+                    onResult(true, responseBody?.data ?: emptyList(), null)
+                } else {
+                    onResult(false, emptyList(), responseBody?.message ?: "Nao foi possivel carregar os eventos.")
+                }
+            } catch (e: Exception) {
+                onResult(false, emptyList(), "Erro de rede: verifique sua conexao.")
+            }
+        }
+    }
+
+    fun startMobileLogin(context: Context, onResult: (Boolean, String) -> Unit) {
+        val state = UUID.randomUUID().toString()
+        pendingMobileState = state
+
+        val loginUri = Uri.parse("${RetrofitClient.API_ORIGIN}/api/auth/mobile/login")
+            .buildUpon()
+            .appendQueryParameter("redirect_uri", MOBILE_REDIRECT_URI)
+            .appendQueryParameter("state", state)
+            .build()
+
+        try {
+            context.startActivity(Intent(Intent.ACTION_VIEW, loginUri))
+        } catch (e: Exception) {
+            pendingMobileState = null
+            onResult(false, "Nao foi possivel abrir o navegador para login.")
+        }
+    }
+
+    fun handleMobileCallback(uri: Uri, onResult: (Boolean, UserProfileData?, String) -> Unit) {
+        val error = uri.getQueryParameter("error")
+        if (error != null) {
+            onResult(false, null, uri.getQueryParameter("error_description") ?: "Login cancelado.")
+            return
+        }
+
+        val expectedState = pendingMobileState
+        val state = uri.getQueryParameter("state")
+        if (expectedState != null && state != expectedState) {
+            onResult(false, null, "Resposta de login invalida.")
+            return
+        }
+
+        val code = uri.getQueryParameter("code")
+        if (code.isNullOrBlank()) {
+            onResult(false, null, "Codigo de login ausente.")
+            return
+        }
+
+        exchangeMobileCode(code) { success, perfil, message ->
+            if (success) {
+                pendingMobileState = null
+            }
+            onResult(success, perfil, message ?: if (success) "Login realizado!" else "Nao foi possivel concluir o login.")
+        }
+    }
+
     /**
      * Exchanges the one-time mobile auth code (received via cheer://auth/callback?code=...)
      * for a real session cookie by calling POST /api/auth/mobile/exchange.
@@ -147,7 +215,7 @@ class MyViewModel : ViewModel() {
         }
     }
 
-
-
-
+    companion object {
+        private const val MOBILE_REDIRECT_URI = "cheer://auth/callback"
+    }
 }
