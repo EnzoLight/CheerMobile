@@ -29,6 +29,7 @@ fun EventosScreen(
     onBackClick: () -> Unit,
     onRefresh: (() -> Unit)? = null,
     canSubscribe: Boolean = false,
+    subscriptionStatuses: Map<Int, String> = emptyMap(),
     onSubscribe: ((Evento) -> Unit)? = null,
     feedbackMessage: String? = null,
 ) {
@@ -177,13 +178,22 @@ fun EventosScreen(
                         Spacer(modifier = Modifier.height(16.dp))
                     }
                     items(filteredEventos, key = { it.id }) { evento ->
+                        val subscriptionStatus = subscriptionStatuses[evento.id]
+                        val isAlreadySubscribed = subscriptionStatus != null
                         EventoCard(
                             evento = evento,
-                            actionLabel = if (canSubscribe) "Inscrever-se" else null,
-                            onActionClick = if (canSubscribe && onSubscribe != null) {
-                                { onSubscribe(evento) }
+                            actionLabel = if (canSubscribe) {
+                                subscriptionStatusLabel(subscriptionStatus)
                             } else {
                                 null
+                            },
+                            actionEnabled = canSubscribe && !isAlreadySubscribed,
+                            actionContainerColor = subscriptionStatusContainerColor(subscriptionStatus),
+                            actionContentColor = subscriptionStatusContentColor(subscriptionStatus),
+                            onActionClick = if (canSubscribe && !isAlreadySubscribed && onSubscribe != null) {
+                                { onSubscribe(evento) }
+                            } else {
+                                {}
                             },
                         )
                     }
@@ -193,4 +203,25 @@ fun EventosScreen(
     }
 }
 
+private fun subscriptionStatusLabel(status: String?): String {
+    return when (status) {
+        "aprovado" -> "Inscrito"
+        "pendente" -> "Pendente"
+        "rejeitado" -> "Inscrição rejeitada"
+        else -> "Inscrever-se"
+    }
+}
+
+private fun subscriptionStatusContainerColor(status: String?): Color {
+    return when (status) {
+        "aprovado" -> Color(0xFFDCE8DF)
+        "pendente" -> Color(0xFFE7E3D8)
+        "rejeitado" -> Color(0xFFE8DDDD)
+        else -> CheerAccent
+    }
+}
+
+private fun subscriptionStatusContentColor(status: String?): Color {
+    return if (status == null) Color.White else CheerText
+}
 

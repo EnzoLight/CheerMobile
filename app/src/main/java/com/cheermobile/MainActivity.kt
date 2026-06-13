@@ -128,6 +128,13 @@ class MainActivity : ComponentActivity() {
                         if (success) {
                             eventos = resultado
                             eventosError = null
+                            if (authenticatedUserType == "voluntario") {
+                                myViewModel.getMinhasInscricoes { inscricoesSuccess, result, _ ->
+                                    if (inscricoesSuccess) {
+                                        minhasInscricoes = result
+                                    }
+                                }
+                            }
                         } else {
                             eventos = emptyList()
                             eventosError = erro
@@ -310,6 +317,11 @@ class MainActivity : ComponentActivity() {
                                 },
                                 onRefresh = { loadEventos() },
                                 canSubscribe = authenticatedUserType == "voluntario",
+                                subscriptionStatuses = if (authenticatedUserType == "voluntario") {
+                                    minhasInscricoes.associate { it.id to (it.status ?: "pendente") }
+                                } else {
+                                    emptyMap()
+                                },
                                 feedbackMessage = eventosFeedback,
                                 onSubscribe = { evento ->
                                     myViewModel.inscreverEvento(evento.id) { success, message ->

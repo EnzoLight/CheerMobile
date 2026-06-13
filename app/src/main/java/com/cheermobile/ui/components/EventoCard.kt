@@ -24,6 +24,9 @@ fun EventoCard(
     modifier: Modifier = Modifier,
     actionLabel: String? = null,
     onActionClick: (() -> Unit)? = null,
+    actionEnabled: Boolean = true,
+    actionContainerColor: Color = CheerAccent,
+    actionContentColor: Color = Color.White,
 ) {
     Card(
         modifier = modifier
@@ -86,9 +89,15 @@ fun EventoCard(
                 Spacer(modifier = Modifier.height(14.dp))
                 Button(
                     onClick = onActionClick,
+                    enabled = actionEnabled,
                     modifier = Modifier.fillMaxWidth(),
                     shape = RoundedCornerShape(12.dp),
-                    colors = ButtonDefaults.buttonColors(containerColor = CheerAccent),
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = actionContainerColor,
+                        contentColor = actionContentColor,
+                        disabledContainerColor = actionContainerColor,
+                        disabledContentColor = actionContentColor,
+                    ),
                 ) {
                     Icon(Icons.Default.VolunteerActivism, contentDescription = null)
                     Spacer(modifier = Modifier.width(8.dp))
