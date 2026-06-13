@@ -199,19 +199,27 @@ class MainActivity : ComponentActivity() {
 
                 LaunchedEffect(callbackUri) {
                     callbackUri?.let { uri ->
-                        exchangeMobileCallback(
-                            vm = myViewModel,
-                            uri = uri,
-                            navigate = { screen ->
-                                authErrorMessage = null
-                                currentScreen = screen
-                                refreshProfile()
-                            },
-                            onError = { message ->
-                                authErrorMessage = message
-                                currentScreen = "login"
-                            },
-                        )
+                        if (uri.host == "auth" && uri.path == "/logout") {
+                            RetrofitClient.clearSessionCookies()
+                            clearAuthenticatedState()
+                            authErrorMessage = null
+                            currentScreen = "login"
+                            Toast.makeText(this@MainActivity, "Sessao encerrada.", Toast.LENGTH_SHORT).show()
+                        } else {
+                            exchangeMobileCallback(
+                                vm = myViewModel,
+                                uri = uri,
+                                navigate = { screen ->
+                                    authErrorMessage = null
+                                    currentScreen = screen
+                                    refreshProfile()
+                                },
+                                onError = { message ->
+                                    authErrorMessage = message
+                                    currentScreen = "login"
+                                },
+                            )
+                        }
                         mobileCallbackUri.value = null
                     }
                 }
@@ -352,7 +360,7 @@ class MainActivity : ComponentActivity() {
                                     currentScreen = if (authenticatedUserType == "instituicao") "criar_evento" else "calendario"
                                 },
                                 onLogout = {
-                                    myViewModel.logout { _, message ->
+                                    myViewModel.logout(this@MainActivity) { _, message ->
                                         Toast.makeText(this@MainActivity, message, Toast.LENGTH_SHORT).show()
                                         clearAuthenticatedState()
                                         currentScreen = "login"

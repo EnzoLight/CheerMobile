@@ -29,6 +29,14 @@
                 <category android:name="android.intent.category.BROWSABLE" />
                 <data android:scheme="cheer" android:host="auth" android:pathPrefix="/callback" />
             </intent-filter>
+
+            <!-- Deep link: intercepts cheer://auth/logout after Authentik logout -->
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data android:scheme="cheer" android:host="auth" android:pathPrefix="/logout" />
+            </intent-filter>
         </activity>
     </application>
 

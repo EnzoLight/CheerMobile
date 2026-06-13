@@ -381,17 +381,24 @@ class MyViewModel : ViewModel() {
         }
     }
 
-    fun logout(onResult: (Boolean, String) -> Unit) {
+    fun logout(context: Context, onResult: (Boolean, String) -> Unit) {
         viewModelScope.launch {
+            var message = "Sessao encerrada."
             try {
                 RetrofitClient.instance.logout()
-                RetrofitClient.clearSessionCookies()
-                pendingMobileState = null
-                onResult(true, "Sessao encerrada.")
             } catch (e: Exception) {
-                RetrofitClient.clearSessionCookies()
-                pendingMobileState = null
-                onResult(true, "Sessao local encerrada.")
+                message = "Sessao local encerrada."
+            }
+
+            RetrofitClient.clearSessionCookies()
+            pendingMobileState = null
+
+            try {
+                val logoutUri = Uri.parse("${RetrofitClient.API_ORIGIN}/api/auth/mobile/logout")
+                context.startActivity(Intent(Intent.ACTION_VIEW, logoutUri))
+                onResult(true, message)
+            } catch (e: Exception) {
+                onResult(true, "$message Nao foi possivel abrir o logout do Authentik.")
             }
         }
     }
