@@ -279,13 +279,8 @@ class MainActivity : ComponentActivity() {
 
                             "login" -> LoginScreen(
                                 onLoginExternalClick = {
-                                    myViewModel.startMobileLogin(this@MainActivity) { success, message ->
-                                        if (!success) {
-                                            Toast.makeText(this@MainActivity, message, Toast.LENGTH_SHORT).show()
-                                            authErrorMessage = message
-                                            currentScreen = "login_webview"
-                                        }
-                                    }
+                                    authErrorMessage = null
+                                    currentScreen = "login_webview"
                                 },
                                 onNavigateToInstitutionRegister = { currentScreen = "cadastro_instituicao" },
                                 onNavigateToVolunteerRegister = { currentScreen = "cadastro_voluntario" },

@@ -4,6 +4,8 @@ import android.content.Context
 import android.content.Intent
 import android.net.Uri
 import android.util.Log
+import android.webkit.CookieManager
+import android.webkit.WebStorage
 import com.cheermobile.models.RegisterInstituicaoRequest
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -391,10 +393,17 @@ class MyViewModel : ViewModel() {
             }
 
             RetrofitClient.clearSessionCookies()
+            clearWebAuthSession()
             pendingMobileState = null
 
             onResult(true, message)
         }
+    }
+
+    private fun clearWebAuthSession() {
+        CookieManager.getInstance().removeAllCookies(null)
+        CookieManager.getInstance().flush()
+        WebStorage.getInstance().deleteAllData()
     }
 
     companion object {

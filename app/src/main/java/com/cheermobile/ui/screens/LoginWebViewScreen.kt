@@ -1,7 +1,9 @@
 package com.cheermobile.ui.screens
 
 import android.net.Uri
+import android.webkit.CookieManager
 import android.webkit.WebResourceRequest
+import android.webkit.WebStorage
 import android.webkit.WebView
 import android.webkit.WebViewClient
 import androidx.compose.foundation.layout.fillMaxSize
@@ -25,6 +27,10 @@ fun LoginWebViewScreen(
         modifier = Modifier.fillMaxSize(),
         factory = { context ->
             WebView(context).apply {
+                CookieManager.getInstance().removeAllCookies(null)
+                CookieManager.getInstance().flush()
+                WebStorage.getInstance().deleteAllData()
+
                 settings.javaScriptEnabled = true
                 settings.domStorageEnabled = true
 
