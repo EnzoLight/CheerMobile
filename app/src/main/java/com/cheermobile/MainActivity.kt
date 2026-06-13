@@ -134,7 +134,7 @@ class MainActivity : ComponentActivity() {
                                 var estaCarregando by remember { mutableStateOf(true) }
                                 var erroEventos by remember { mutableStateOf<String?>(null) }
 
-                                LaunchedEffect(Unit) {
+                                fun loadEventos() {
                                     estaCarregando = true
                                     myViewModel.getEventos { success, resultado, erro ->
                                         estaCarregando = false
@@ -146,13 +146,18 @@ class MainActivity : ComponentActivity() {
                                     }
                                 }
 
+                                LaunchedEffect(Unit) {
+                                    loadEventos()
+                                }
+
                                 EventosScreen(
                                     eventos = listaDeEventos,
                                     isLoading = estaCarregando,
                                     errorMessage = erroEventos,
                                     onBackClick = {
                                         currentScreen = if (authenticatedUserType == null) "home" else "eventos"
-                                    }
+                                    },
+                                    onRefresh = { loadEventos() },
                                 )
                             }
 

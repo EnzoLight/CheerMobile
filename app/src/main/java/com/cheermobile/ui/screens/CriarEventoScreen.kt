@@ -8,6 +8,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Refresh
+import androidx.compose.material.icons.filled.Save
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -220,6 +221,11 @@ fun CriarEventoScreen(
                         Icon(Icons.Default.ArrowBack, contentDescription = "Voltar")
                     }
                 },
+                actions = {
+                    IconButton(onClick = { loadMeusEventos() }) {
+                        Icon(Icons.Default.Refresh, contentDescription = "Recarregar eventos")
+                    }
+                },
                 colors = TopAppBarDefaults.topAppBarColors(
                     containerColor = Color.White,
                     titleContentColor = CheerText,
@@ -228,18 +234,16 @@ fun CriarEventoScreen(
         },
         containerColor = CheerBackground,
     ) { innerPadding ->
-        Row(
+        Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(innerPadding),
-            horizontalArrangement = Arrangement.spacedBy(0.dp),
+                .padding(innerPadding)
+                .verticalScroll(rememberScrollState())
+                .padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(18.dp),
         ) {
-            // ── Painel esquerdo: formulário ─────────────────────────────────
             Column(
-                modifier = Modifier
-                    .weight(1f)
-                    .verticalScroll(rememberScrollState())
-                    .padding(16.dp),
+                modifier = Modifier.fillMaxWidth(),
             ) {
                 EventosPanelHeader(
                     kicker = "INSTITUIÇÃO",
@@ -249,9 +253,9 @@ fun CriarEventoScreen(
 
                 Card(
                     modifier = Modifier.fillMaxWidth(),
-                    shape = RoundedCornerShape(20.dp),
+                    shape = RoundedCornerShape(14.dp),
                     colors = CardDefaults.cardColors(containerColor = Color.White),
-                    elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
+                    elevation = CardDefaults.cardElevation(defaultElevation = 1.dp),
                 ) {
                     Column(modifier = Modifier.padding(20.dp)) {
 
@@ -264,9 +268,8 @@ fun CriarEventoScreen(
                         )
 
                         // Tipo + Frequência
-                        Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                        Column(verticalArrangement = Arrangement.spacedBy(0.dp)) {
                             CheerDropdown(
-                                modifier = Modifier.weight(1f),
                                 label = "Tipo de evento *",
                                 selected = form.tipoEvento,
                                 options = listOf(
@@ -280,7 +283,6 @@ fun CriarEventoScreen(
                                 onSelected = { updateField("tipoEvento", it) },
                             )
                             CheerDropdown(
-                                modifier = Modifier.weight(1f),
                                 label = "Frequência",
                                 selected = form.constancia,
                                 options = listOf(
@@ -312,9 +314,8 @@ fun CriarEventoScreen(
 
                         // Datas
                         val today = todayString()
-                        Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                        Column(verticalArrangement = Arrangement.spacedBy(0.dp)) {
                             CheerTextField(
-                                modifier = Modifier.weight(1f),
                                 label = "Data de início *",
                                 value = form.dataInicio,
                                 onValueChange = { updateField("dataInicio", it) },
@@ -322,7 +323,6 @@ fun CriarEventoScreen(
                                 keyboardType = KeyboardType.Number,
                             )
                             CheerTextField(
-                                modifier = Modifier.weight(1f),
                                 label = "Hora de início *",
                                 value = form.horaInicio,
                                 onValueChange = { updateField("horaInicio", it) },
@@ -330,9 +330,8 @@ fun CriarEventoScreen(
                                 keyboardType = KeyboardType.Number,
                             )
                         }
-                        Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                        Column(verticalArrangement = Arrangement.spacedBy(0.dp)) {
                             CheerTextField(
-                                modifier = Modifier.weight(1f),
                                 label = "Data de fim",
                                 value = form.dataFim,
                                 onValueChange = { updateField("dataFim", it) },
@@ -340,7 +339,6 @@ fun CriarEventoScreen(
                                 keyboardType = KeyboardType.Number,
                             )
                             CheerTextField(
-                                modifier = Modifier.weight(1f),
                                 label = "Hora de fim",
                                 value = form.horaFim,
                                 onValueChange = { updateField("horaFim", it) },
@@ -361,9 +359,8 @@ fun CriarEventoScreen(
                         )
                         Spacer(Modifier.height(12.dp))
 
-                        Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                        Column(verticalArrangement = Arrangement.spacedBy(0.dp)) {
                             CheerTextField(
-                                modifier = Modifier.weight(1f),
                                 label = "CEP *",
                                 value = form.codigoPostal,
                                 onValueChange = { updateField("codigoPostal", it) },
@@ -371,7 +368,6 @@ fun CriarEventoScreen(
                                 keyboardType = KeyboardType.Number,
                             )
                             CheerTextField(
-                                modifier = Modifier.weight(1f),
                                 label = "UF *",
                                 value = form.uf,
                                 onValueChange = { updateField("uf", it) },
@@ -384,9 +380,8 @@ fun CriarEventoScreen(
                             onValueChange = { updateField("rua", it) },
                             placeholder = "Rua das Flores",
                         )
-                        Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                        Column(verticalArrangement = Arrangement.spacedBy(0.dp)) {
                             CheerTextField(
-                                modifier = Modifier.weight(1f),
                                 label = "Número *",
                                 value = form.numero,
                                 onValueChange = { updateField("numero", it) },
@@ -394,23 +389,20 @@ fun CriarEventoScreen(
                                 keyboardType = KeyboardType.Number,
                             )
                             CheerTextField(
-                                modifier = Modifier.weight(1f),
                                 label = "Complemento",
                                 value = form.complemento,
                                 onValueChange = { updateField("complemento", it) },
                                 placeholder = "Apto 4",
                             )
                         }
-                        Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                        Column(verticalArrangement = Arrangement.spacedBy(0.dp)) {
                             CheerTextField(
-                                modifier = Modifier.weight(1f),
                                 label = "Bairro *",
                                 value = form.bairro,
                                 onValueChange = { updateField("bairro", it) },
                                 placeholder = "Centro",
                             )
                             CheerTextField(
-                                modifier = Modifier.weight(1f),
                                 label = "Cidade *",
                                 value = form.cidade,
                                 onValueChange = { updateField("cidade", it) },
@@ -453,6 +445,9 @@ fun CriarEventoScreen(
                                     strokeWidth = 2.dp,
                                 )
                                 Spacer(Modifier.width(8.dp))
+                            } else {
+                                Icon(Icons.Default.Save, contentDescription = null)
+                                Spacer(Modifier.width(8.dp))
                             }
                             Text(
                                 text = if (isSubmitting) "Criando evento..." else "Criar evento",
@@ -462,16 +457,10 @@ fun CriarEventoScreen(
                         }
                     }
                 }
-
-                Spacer(Modifier.height(24.dp))
             }
 
-            // ── Painel direito: lista de meus eventos ───────────────────────
             Column(
-                modifier = Modifier
-                    .weight(1f)
-                    .verticalScroll(rememberScrollState())
-                    .padding(16.dp),
+                modifier = Modifier.fillMaxWidth(),
             ) {
                 EventosPanelHeader(
                     kicker = "CHEER EVENTOS",

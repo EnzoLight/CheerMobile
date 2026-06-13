@@ -5,16 +5,15 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.cheermobile.models.Evento
 import com.cheermobile.ui.components.EventoCard
@@ -27,8 +26,32 @@ fun EventosScreen(
     eventos: List<Evento>,
     isLoading: Boolean,
     errorMessage: String? = null,
-    onBackClick: () -> Unit
+    onBackClick: () -> Unit,
+    onRefresh: (() -> Unit)? = null,
 ) {
+    var searchTerm by remember { mutableStateOf("") }
+    val filteredEventos by remember(eventos, searchTerm) {
+        derivedStateOf {
+            val query = searchTerm.trim().lowercase()
+            if (query.isBlank()) {
+                eventos
+            } else {
+                eventos.filter { evento ->
+                    listOf(
+                        evento.titulo,
+                        evento.descricao,
+                        evento.tipoEvento,
+                        evento.cidade,
+                        evento.uf,
+                        evento.endereco?.cidade,
+                        evento.endereco?.uf,
+                        evento.endereco?.bairro,
+                    ).any { value -> value?.lowercase()?.contains(query) == true }
+                }
+            }
+        }
+    }
+
     Scaffold(
         topBar = {
             TopAppBar(
@@ -36,6 +59,13 @@ fun EventosScreen(
                 navigationIcon = {
                     IconButton(onClick = onBackClick) {
                         Icon(Icons.Default.ArrowBack, contentDescription = "Voltar")
+                    }
+                },
+                actions = {
+                    if (onRefresh != null) {
+                        IconButton(onClick = onRefresh) {
+                            Icon(Icons.Default.Refresh, contentDescription = "Recarregar eventos")
+                        }
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
@@ -53,20 +83,19 @@ fun EventosScreen(
                 .padding(horizontal = 16.dp)
         ) {
             Spacer(modifier = Modifier.height(16.dp))
-            
-            // Barra de Busca Simples
+
             OutlinedTextField(
-                value = "",
-                onValueChange = {},
+                value = searchTerm,
+                onValueChange = { searchTerm = it },
                 modifier = Modifier.fillMaxWidth(),
-                placeholder = { Text("Pesquisar eventos...") },
+                placeholder = { Text("Buscar por nome, tipo ou cidade") },
                 leadingIcon = { Icon(Icons.Default.Search, contentDescription = null) },
                 shape = MaterialTheme.shapes.medium,
                 colors = OutlinedTextFieldDefaults.colors(
                     focusedContainerColor = Color.White,
                     unfocusedContainerColor = Color.White,
                     unfocusedBorderColor = CheerBrandBorder,
-                    focusedBorderColor = CheerPrimary // Opcional: define a cor da borda quando clicado
+                    focusedBorderColor = CheerPrimary
                 )
             )
 
@@ -78,11 +107,29 @@ fun EventosScreen(
                 }
             } else if (errorMessage != null) {
                 Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                    Text(errorMessage, color = CheerMutedText, textAlign = TextAlign.Center)
+                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                        Text(errorMessage, color = CheerMutedText, textAlign = TextAlign.Center)
+                        if (onRefresh != null) {
+                            Spacer(modifier = Modifier.height(12.dp))
+                            OutlinedButton(onClick = onRefresh) {
+                                Icon(Icons.Default.Refresh, contentDescription = null)
+                                Spacer(modifier = Modifier.width(8.dp))
+                                Text("Tentar novamente")
+                            }
+                        }
+                    }
                 }
-            } else if (eventos.isEmpty()) {
+            } else if (filteredEventos.isEmpty()) {
                 Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                    Text("Nenhum evento encontrado.", color = CheerMutedText)
+                    Text(
+                        text = if (eventos.isEmpty()) {
+                            "Nenhum evento disponível no momento."
+                        } else {
+                            "Nenhum evento combina com a busca."
+                        },
+                        color = CheerMutedText,
+                        textAlign = TextAlign.Center
+                    )
                 }
             } else {
                 LazyColumn(
@@ -103,13 +150,13 @@ fun EventosScreen(
                             color = CheerText
                         )
                         Text(
-                            text = "Explore oportunidades para participar.",
+                            text = "${filteredEventos.size} oportunidade(s) para participar.",
                             style = MaterialTheme.typography.bodyMedium,
                             color = CheerMutedText
                         )
                         Spacer(modifier = Modifier.height(16.dp))
                     }
-                    items(eventos) { evento ->
+                    items(filteredEventos, key = { it.id }) { evento ->
                         EventoCard(evento = evento)
                     }
                 }
