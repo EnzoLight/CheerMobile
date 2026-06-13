@@ -45,7 +45,7 @@ fun LoginScreen(
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color(0xFFFAFCFF)),
+            .background(CheerBackground),
     ) {
         LoginBackgroundWaves()
 
@@ -103,7 +103,7 @@ fun LoginScreen(
                     .fillMaxWidth()
                     .padding(bottom = 8.dp),
                 shape = RoundedCornerShape(28.dp),
-                colors = CardDefaults.cardColors(containerColor = Color.White),
+                colors = CardDefaults.cardColors(containerColor = CheerSurface),
                 elevation = CardDefaults.cardElevation(defaultElevation = 10.dp),
             ) {
                 Column(

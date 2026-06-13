@@ -19,6 +19,7 @@ import androidx.compose.material.icons.filled.Event
 import androidx.compose.material.icons.filled.ListAlt
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.Scaffold
@@ -258,7 +259,7 @@ class MainActivity : ComponentActivity() {
 
                 Scaffold(
                     modifier = Modifier.fillMaxSize(),
-                    containerColor = CheerBackground,
+                    containerColor = MaterialTheme.colorScheme.background,
                     bottomBar = {
                         val tipo = authenticatedUserType
                         if (tipo != null && currentScreen in authenticatedScreens) {

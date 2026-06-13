@@ -56,7 +56,7 @@ fun CadastroVoluntarioScreen(
             .fillMaxSize()
             .background(
                 brush = Brush.verticalGradient(
-                    colors = listOf(CheerPrimarySoft, Color.White, CheerAccentSoft)
+                    colors = listOf(CheerPrimarySoft, CheerBackground, CheerAccentSoft)
                 )
             )
     ) {
@@ -85,7 +85,7 @@ fun CadastroVoluntarioScreen(
                     Card(
                         modifier = Modifier.fillMaxWidth().padding(vertical = 16.dp),
                         shape = RoundedCornerShape(26.dp),
-                        colors = CardDefaults.cardColors(containerColor = Color.White),
+                        colors = CardDefaults.cardColors(containerColor = CheerSurface),
                         elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
                     ) {
                         Column(modifier = Modifier.padding(24.dp)) {
@@ -119,7 +119,7 @@ fun CadastroVoluntarioScreen(
                     Card(
                         modifier = Modifier.fillMaxWidth().padding(bottom = 24.dp),
                         shape = RoundedCornerShape(26.dp),
-                        colors = CardDefaults.cardColors(containerColor = Color.White),
+                        colors = CardDefaults.cardColors(containerColor = CheerSurface),
                         elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
                     ) {
                         Column(modifier = Modifier.padding(24.dp)) {

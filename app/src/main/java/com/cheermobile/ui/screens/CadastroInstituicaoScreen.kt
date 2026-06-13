@@ -199,7 +199,7 @@ fun CadastroInstituicaoScreen(
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = Color.White,
+                    containerColor = CheerSurface,
                     titleContentColor = CheerText,
                 ),
             )
@@ -217,7 +217,7 @@ fun CadastroInstituicaoScreen(
                 modifier = Modifier
                     .fillMaxWidth()
                     .background(
-                        brush = Brush.verticalGradient(listOf(CheerPrimarySoft, Color.White))
+                        brush = Brush.verticalGradient(listOf(CheerPrimarySoft, CheerBackground))
                     )
                     .padding(horizontal = 24.dp, vertical = 28.dp),
             ) {
@@ -253,7 +253,7 @@ fun CadastroInstituicaoScreen(
                     .fillMaxWidth()
                     .padding(16.dp),
                 shape = RoundedCornerShape(20.dp),
-                colors = CardDefaults.cardColors(containerColor = Color.White),
+                colors = CardDefaults.cardColors(containerColor = CheerSurface),
                 elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
             ) {
                 Column(modifier = Modifier.padding(20.dp)) {
@@ -506,8 +506,8 @@ private fun CheerTextField(
             colors = OutlinedTextFieldDefaults.colors(
                 unfocusedBorderColor = CheerBrandBorder,
                 focusedBorderColor = CheerPrimary,
-                unfocusedContainerColor = Color.White,
-                focusedContainerColor = Color.White,
+                unfocusedContainerColor = CheerSurface,
+                focusedContainerColor = CheerSurface,
             ),
         )
     }
@@ -541,8 +541,8 @@ private fun CheerDropdown(
                 colors = OutlinedTextFieldDefaults.colors(
                     unfocusedBorderColor = CheerBrandBorder,
                     focusedBorderColor = CheerPrimary,
-                    unfocusedContainerColor = Color.White,
-                    focusedContainerColor = Color.White,
+                    unfocusedContainerColor = CheerSurface,
+                    focusedContainerColor = CheerSurface,
                 ),
             )
             ExposedDropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
@@ -564,7 +564,7 @@ private fun CheerDropdown(
 private fun PasswordRequirementsPanel(validations: Map<String, Boolean>) {
     Card(
         shape = RoundedCornerShape(14.dp),
-        colors = CardDefaults.cardColors(containerColor = Color.White),
+        colors = CardDefaults.cardColors(containerColor = CheerSurface),
         elevation = CardDefaults.cardElevation(defaultElevation = 1.dp),
     ) {
         Column(modifier = Modifier.padding(16.dp)) {

@@ -73,7 +73,7 @@ fun EventosScreen(
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = Color.White,
+                    containerColor = CheerSurface,
                     titleContentColor = CheerText
                 )
             )
@@ -96,8 +96,8 @@ fun EventosScreen(
                 leadingIcon = { Icon(Icons.Default.Search, contentDescription = null) },
                 shape = MaterialTheme.shapes.medium,
                 colors = OutlinedTextFieldDefaults.colors(
-                    focusedContainerColor = Color.White,
-                    unfocusedContainerColor = Color.White,
+                    focusedContainerColor = CheerSurface,
+                    unfocusedContainerColor = CheerSurface,
                     unfocusedBorderColor = CheerBrandBorder,
                     focusedBorderColor = CheerPrimary
                 )
@@ -212,16 +212,12 @@ private fun subscriptionStatusLabel(status: String?): String {
     }
 }
 
+@Composable
 private fun subscriptionStatusContainerColor(status: String?): Color {
-    return when (status) {
-        "aprovado" -> Color(0xFFDCE8DF)
-        "pendente" -> Color(0xFFE7E3D8)
-        "rejeitado" -> Color(0xFFE8DDDD)
-        else -> CheerAccent
-    }
+    return CheerStatusContainerColor(status)
 }
 
+@Composable
 private fun subscriptionStatusContentColor(status: String?): Color {
-    return if (status == null) Color.White else CheerText
+    return CheerStatusContentColor(status)
 }
-

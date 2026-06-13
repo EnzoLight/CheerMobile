@@ -54,13 +54,14 @@ import com.cheermobile.models.DashboardData
 import com.cheermobile.models.Evento
 import com.cheermobile.models.InscritoEvento
 import com.cheermobile.ui.theme.CheerAccent
-import com.cheermobile.ui.theme.CheerAccentSoft
 import com.cheermobile.ui.theme.CheerBackground
 import com.cheermobile.ui.theme.CheerBrandBorder
 import com.cheermobile.ui.theme.CheerMutedText
 import com.cheermobile.ui.theme.CheerPrimary
 import com.cheermobile.ui.theme.CheerPrimarySoft
 import com.cheermobile.ui.theme.CheerSurface
+import com.cheermobile.ui.theme.CheerStatusContainerColor
+import com.cheermobile.ui.theme.CheerStatusContentColor
 import com.cheermobile.ui.theme.CheerText
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -92,7 +93,7 @@ fun DashboardInstituicaoScreen(
         }
     }
 
-    Surface(color = CheerBackground, modifier = Modifier.fillMaxSize()) {
+    Surface(color = CheerBackground, contentColor = CheerText, modifier = Modifier.fillMaxSize()) {
         Column(
             modifier = Modifier
                 .fillMaxSize()
@@ -416,15 +417,10 @@ private fun InscritoRow(inscrito: InscritoEvento, actions: (@Composable RowScope
 
 @Composable
 private fun StatusChip(status: String) {
-    val color = when (status) {
-        "aprovado" -> Color(0xFFE8F5E9)
-        "rejeitado" -> Color(0xFFFFEBEE)
-        else -> CheerAccentSoft
-    }
-    Surface(shape = RoundedCornerShape(50), color = color) {
+    Surface(shape = RoundedCornerShape(50), color = CheerStatusContainerColor(status)) {
         Text(
             status,
-            color = CheerText,
+            color = CheerStatusContentColor(status),
             style = MaterialTheme.typography.labelSmall,
             fontWeight = FontWeight.Bold,
             modifier = Modifier.padding(horizontal = 10.dp, vertical = 5.dp),

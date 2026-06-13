@@ -282,7 +282,7 @@ fun CriarEventoScreen(
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = Color.White,
+                    containerColor = CheerSurface,
                     titleContentColor = CheerText,
                 ),
             )
@@ -313,7 +313,7 @@ fun CriarEventoScreen(
                 Card(
                     modifier = Modifier.fillMaxWidth(),
                     shape = RoundedCornerShape(14.dp),
-                    colors = CardDefaults.cardColors(containerColor = Color.White),
+                    colors = CardDefaults.cardColors(containerColor = CheerSurface),
                     elevation = CardDefaults.cardElevation(defaultElevation = 1.dp),
                 ) {
                     Column(modifier = Modifier.padding(20.dp)) {
@@ -635,7 +635,7 @@ private fun EventoListItem(evento: Evento) {
     Card(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(14.dp),
-        colors = CardDefaults.cardColors(containerColor = Color.White),
+        colors = CardDefaults.cardColors(containerColor = CheerSurface),
         elevation = CardDefaults.cardElevation(defaultElevation = 1.dp),
     ) {
         Column(modifier = Modifier.padding(16.dp)) {
@@ -713,8 +713,8 @@ private fun CheerTextField(
             colors = OutlinedTextFieldDefaults.colors(
                 unfocusedBorderColor = CheerBrandBorder,
                 focusedBorderColor = CheerPrimary,
-                unfocusedContainerColor = Color.White,
-                focusedContainerColor = Color.White,
+                unfocusedContainerColor = CheerSurface,
+                focusedContainerColor = CheerSurface,
             ),
         )
     }
@@ -744,8 +744,8 @@ private fun CheerTextArea(
             colors = OutlinedTextFieldDefaults.colors(
                 unfocusedBorderColor = CheerBrandBorder,
                 focusedBorderColor = CheerPrimary,
-                unfocusedContainerColor = Color.White,
-                focusedContainerColor = Color.White,
+                unfocusedContainerColor = CheerSurface,
+                focusedContainerColor = CheerSurface,
             ),
         )
     }
@@ -779,8 +779,8 @@ private fun CheerDropdown(
                 colors = OutlinedTextFieldDefaults.colors(
                     unfocusedBorderColor = CheerBrandBorder,
                     focusedBorderColor = CheerPrimary,
-                    unfocusedContainerColor = Color.White,
-                    focusedContainerColor = Color.White,
+                    unfocusedContainerColor = CheerSurface,
+                    focusedContainerColor = CheerSurface,
                 ),
             )
             ExposedDropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {

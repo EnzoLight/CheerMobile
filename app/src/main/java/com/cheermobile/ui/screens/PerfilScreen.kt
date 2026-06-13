@@ -54,7 +54,7 @@ fun PerfilScreen(
     onPrimaryAction: () -> Unit,
     onLogout: () -> Unit,
 ) {
-    Surface(color = CheerBackground, modifier = Modifier.fillMaxSize()) {
+    Surface(color = CheerBackground, contentColor = CheerText, modifier = Modifier.fillMaxSize()) {
         Column(
             modifier = Modifier
                 .fillMaxSize()

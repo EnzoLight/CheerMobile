@@ -54,7 +54,7 @@ fun CalendarioScreen(
 ) {
     val hasItems = if (isInstituicao) eventos.isNotEmpty() else inscricoes.isNotEmpty()
 
-    Surface(color = CheerBackground, modifier = Modifier.fillMaxSize()) {
+    Surface(color = CheerBackground, contentColor = CheerText, modifier = Modifier.fillMaxSize()) {
         Column(
             modifier = Modifier
                 .fillMaxSize()

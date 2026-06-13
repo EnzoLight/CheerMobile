@@ -73,7 +73,7 @@ fun LogsOperacionaisScreen(
     onFiltersChange: (LogsFilters) -> Unit,
     onRefresh: () -> Unit,
 ) {
-    Surface(color = CheerBackground, modifier = Modifier.fillMaxSize()) {
+    Surface(color = CheerBackground, contentColor = CheerText, modifier = Modifier.fillMaxSize()) {
         Column(
             modifier = Modifier
                 .fillMaxSize()

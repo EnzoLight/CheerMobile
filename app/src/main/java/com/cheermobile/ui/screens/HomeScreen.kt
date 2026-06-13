@@ -40,7 +40,7 @@ fun HomeScreen(onStartClick: () -> Unit) {
             modifier = Modifier
                 .fillMaxSize()
                 .padding(padding)
-                .background(Color.White)
+                .background(CheerBackground)
         ) {
             // --- HERO SECTION ---
             item {
@@ -189,7 +189,7 @@ fun PrincipleCard(data: PrincipleData) {
         modifier = Modifier
             .fillMaxWidth()
             .padding(horizontal = 24.dp, vertical = 8.dp),
-        colors = CardDefaults.cardColors(containerColor = Color(0xFFF8F9FA)),
+        colors = CardDefaults.cardColors(containerColor = CheerSurface),
         shape = RoundedCornerShape(16.dp)
     ) {
         Row(
