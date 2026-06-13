@@ -361,7 +361,7 @@ class MainActivity : ComponentActivity() {
                                     currentScreen = if (authenticatedUserType == "instituicao") "criar_evento" else "calendario"
                                 },
                                 onLogout = {
-                                    myViewModel.logout(this@MainActivity) { _, message ->
+                                    myViewModel.logout { _, message ->
                                         Toast.makeText(this@MainActivity, message, Toast.LENGTH_SHORT).show()
                                         clearAuthenticatedState()
                                         currentScreen = "login"
