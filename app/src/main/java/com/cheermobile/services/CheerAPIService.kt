@@ -26,6 +26,7 @@ import com.cheermobile.models.InscritosEventoResponse
 import com.cheermobile.models.StatusInscritoRequest
 import com.cheermobile.models.DashboardInstituicaoResponse
 import com.cheermobile.models.LogsResponse
+import com.cheermobile.models.MobileLogoutResponse
 
 interface CheerApiService {
 
@@ -41,6 +42,9 @@ interface CheerApiService {
 
     @POST("auth/logout")
     suspend fun logout(): Response<Unit>
+
+    @POST("auth/mobile/logout")
+    suspend fun mobileLogout(): Response<MobileLogoutResponse>
 
     @GET("me")
     suspend fun getMe(): Response<UserProfileResponse>

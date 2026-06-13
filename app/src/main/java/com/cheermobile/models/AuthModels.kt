@@ -79,3 +79,12 @@ data class UserProfileData(
 data class MobileExchangeRequest(
     val code: String
 )
+
+data class MobileLogoutResponse(
+    val status: String,
+    val data: MobileLogoutData? = null,
+)
+
+data class MobileLogoutData(
+    @SerializedName("logout_url") val logoutUrl: String
+)
