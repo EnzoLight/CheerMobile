@@ -35,7 +35,7 @@ fun EventoCard(
                 shape = RoundedCornerShape(50),
             ) {
                 Text(
-                    text = evento.tipoEvento,
+                    text = evento.tipoEvento ?: "voluntariado",
                     modifier = Modifier.padding(horizontal = 12.dp, vertical = 4.dp),
                     style = MaterialTheme.typography.labelSmall,
                     color = CheerPrimary
@@ -45,7 +45,7 @@ fun EventoCard(
             Spacer(modifier = Modifier.height(8.dp))
 
             Text(
-                text = evento.titulo,
+                text = evento.titulo ?: "Evento sem titulo",
                 style = MaterialTheme.typography.titleLarge.copy(
                     fontWeight = FontWeight.Bold,
                     color = CheerText
@@ -69,7 +69,7 @@ fun EventoCard(
             Row(modifier = Modifier.fillMaxWidth()) {
                 Column(modifier = Modifier.weight(1f)) {
                     Text("Início", style = MaterialTheme.typography.labelSmall, color = CheerMutedText)
-                    Text(evento.dataInicio, style = MaterialTheme.typography.bodySmall, color = CheerText)
+                    Text(evento.dataInicio ?: "Não informado", style = MaterialTheme.typography.bodySmall, color = CheerText)
                 }
                 Column(modifier = Modifier.weight(1f)) {
                     Text("Fim", style = MaterialTheme.typography.labelSmall, color = CheerMutedText)
@@ -90,7 +90,7 @@ fun EventoCard(
             Row(modifier = Modifier.fillMaxWidth()) {
                 Text("Participação", style = MaterialTheme.typography.labelSmall, color = CheerMutedText)
                 Spacer(modifier = Modifier.width(4.dp))
-                Text("Máx: ${evento.maxVoluntarios}", style = MaterialTheme.typography.bodySmall, color = CheerText)
+                Text("Máx: ${evento.maxVoluntarios ?: "Não informado"}", style = MaterialTheme.typography.bodySmall, color = CheerText)
             }
         }
     }

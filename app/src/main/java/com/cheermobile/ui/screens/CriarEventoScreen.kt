@@ -593,7 +593,7 @@ private fun EventoListItem(evento: Evento) {
                 verticalAlignment = Alignment.Top,
             ) {
                 Text(
-                    text = evento.titulo,
+                    text = evento.titulo ?: "Evento sem titulo",
                     style = MaterialTheme.typography.titleSmall,
                     fontWeight = FontWeight.Bold,
                     color = CheerText,
@@ -614,7 +614,7 @@ private fun EventoListItem(evento: Evento) {
             }
             Spacer(Modifier.height(8.dp))
             EventoDetailRow(label = "Tipo", value = evento.tipoEvento ?: "—")
-            EventoDetailRow(label = "Data", value = evento.dataInicio.take(10).ifBlank { "Não informada" })
+            EventoDetailRow(label = "Data", value = evento.dataInicio?.take(10)?.ifBlank { "Não informada" } ?: "Não informada")
             EventoDetailRow(label = "Local", value = location.ifBlank { "Não informado" })
         }
     }
