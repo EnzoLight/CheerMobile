@@ -1,5 +1,6 @@
 package com.cheermobile.ui.screens
 
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
@@ -15,12 +16,16 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalClipboardManager
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.cheermobile.R
 import com.cheermobile.ui.theme.*
 
 @Composable
@@ -38,110 +43,173 @@ fun LoginScreen(
             .fillMaxSize()
             .background(
                 brush = Brush.linearGradient(
-                    colors = listOf(CheerPrimarySoft, Color.White, CheerAccentSoft)
+                    colors = listOf(Color.White, CheerPrimarySoft, CheerAccentSoft)
                 )
             ),
         contentAlignment = Alignment.Center
     ) {
-        Card(
+        Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(24.dp),
-            shape = RoundedCornerShape(26.dp),
-            colors = CardDefaults.cardColors(containerColor = Color.White),
-            elevation = CardDefaults.cardElevation(defaultElevation = 8.dp)
+                .padding(horizontal = 24.dp)
+                .verticalScroll(rememberScrollState()),
+            horizontalAlignment = Alignment.CenterHorizontally,
         ) {
-            Column(
-                modifier = Modifier
-                    .padding(24.dp)
-                    .fillMaxWidth()
-                    .verticalScroll(rememberScrollState()),
-                horizontalAlignment = Alignment.CenterHorizontally
+            Surface(
+                modifier = Modifier.size(112.dp),
+                shape = RoundedCornerShape(26.dp),
+                color = Color.White,
+                shadowElevation = 8.dp,
             ) {
-                Text(
-                    text = "Bem-vindo ao Cheer",
-                    style = MaterialTheme.typography.headlineSmall,
-                    fontWeight = FontWeight.Bold,
-                    color = CheerPrimary
+                Image(
+                    painter = painterResource(id = R.drawable.logo_cheer),
+                    contentDescription = "Logo Cheer",
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(9.dp)
+                        .clip(RoundedCornerShape(20.dp)),
+                    contentScale = ContentScale.Crop,
                 )
-                Text(
-                    text = "Acesse sua conta com segurança via Authentik.",
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = CheerMutedText,
-                    textAlign = TextAlign.Center,
-                    modifier = Modifier.padding(vertical = 16.dp)
-                )
+            }
 
-                Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(22.dp))
 
-                // BOTÃO DE LOGIN EXTERNO
-                Button(
-                    onClick = onLoginExternalClick,
-                    modifier = Modifier.fillMaxWidth().height(56.dp),
-                    colors = ButtonDefaults.buttonColors(containerColor = CheerPrimary),
-                    shape = RoundedCornerShape(12.dp)
+            Text(
+                text = "Cheer",
+                style = MaterialTheme.typography.displaySmall,
+                fontWeight = FontWeight.ExtraBold,
+                color = CheerPrimary,
+                textAlign = TextAlign.Center,
+            )
+
+            Text(
+                text = "Voluntariado sem complicação",
+                style = MaterialTheme.typography.titleMedium,
+                fontWeight = FontWeight.Bold,
+                color = CheerText,
+                textAlign = TextAlign.Center,
+            )
+
+            Spacer(modifier = Modifier.height(10.dp))
+
+            Text(
+                text = "Entre para encontrar ações sociais, acompanhar suas inscrições ou gerenciar eventos da sua instituição.",
+                style = MaterialTheme.typography.bodyLarge,
+                color = CheerMutedText,
+                textAlign = TextAlign.Center,
+                lineHeight = 24.sp,
+                modifier = Modifier.padding(horizontal = 4.dp),
+            )
+
+            Spacer(modifier = Modifier.height(28.dp))
+
+            Card(
+                modifier = Modifier.fillMaxWidth(),
+                shape = RoundedCornerShape(22.dp),
+                colors = CardDefaults.cardColors(containerColor = Color.White),
+                elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
+            ) {
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(20.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally,
                 ) {
-                    Icon(Icons.Default.Login, contentDescription = null)
-                    Spacer(Modifier.width(8.dp))
-                    Text("Entrar com Authentik", fontWeight = FontWeight.Bold, fontSize = 16.sp)
-                }
+                    Text(
+                        text = "Acesse sua conta",
+                        style = MaterialTheme.typography.titleLarge,
+                        fontWeight = FontWeight.Bold,
+                        color = CheerText,
+                    )
+                    Text(
+                        text = "Login seguro via Authentik.",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = CheerMutedText,
+                        textAlign = TextAlign.Center,
+                        modifier = Modifier.padding(top = 4.dp, bottom = 18.dp),
+                    )
 
-                errorMessage?.let { message ->
-                    Spacer(modifier = Modifier.height(16.dp))
-                    Surface(
-                        modifier = Modifier.fillMaxWidth(),
-                        shape = RoundedCornerShape(12.dp),
-                        color = Color(0xFFFFEBEE),
+                    Button(
+                        onClick = onLoginExternalClick,
+                        modifier = Modifier.fillMaxWidth().height(56.dp),
+                        colors = ButtonDefaults.buttonColors(containerColor = CheerPrimary),
+                        shape = RoundedCornerShape(14.dp)
                     ) {
-                        Column(modifier = Modifier.padding(12.dp)) {
-                            Text(
-                                text = "Erro no login",
-                                color = Color(0xFFC62828),
-                                fontWeight = FontWeight.Bold,
-                                style = MaterialTheme.typography.titleSmall,
-                            )
-                            Spacer(modifier = Modifier.height(8.dp))
-                            SelectionContainer {
+                        Icon(Icons.Default.Login, contentDescription = null)
+                        Spacer(Modifier.width(8.dp))
+                        Text("Entrar", fontWeight = FontWeight.Bold, fontSize = 16.sp)
+                    }
+
+                    errorMessage?.let { message ->
+                        Spacer(modifier = Modifier.height(16.dp))
+                        Surface(
+                            modifier = Modifier.fillMaxWidth(),
+                            shape = RoundedCornerShape(12.dp),
+                            color = Color(0xFFFFEBEE),
+                        ) {
+                            Column(modifier = Modifier.padding(12.dp)) {
                                 Text(
-                                    text = message,
-                                    color = Color(0xFF5F2120),
-                                    style = MaterialTheme.typography.bodySmall,
+                                    text = "Erro no login",
+                                    color = Color(0xFFC62828),
+                                    fontWeight = FontWeight.Bold,
+                                    style = MaterialTheme.typography.titleSmall,
                                 )
-                            }
-                            Spacer(modifier = Modifier.height(8.dp))
-                            Row(
-                                modifier = Modifier.fillMaxWidth(),
-                                horizontalArrangement = Arrangement.End,
-                            ) {
-                                TextButton(
-                                    onClick = {
-                                        clipboardManager.setText(AnnotatedString(message))
-                                    },
-                                ) {
-                                    Icon(Icons.Default.ContentCopy, contentDescription = null)
-                                    Spacer(Modifier.width(6.dp))
-                                    Text("Copiar")
+                                Spacer(modifier = Modifier.height(8.dp))
+                                SelectionContainer {
+                                    Text(
+                                        text = message,
+                                        color = Color(0xFF5F2120),
+                                        style = MaterialTheme.typography.bodySmall,
+                                    )
                                 }
-                                TextButton(onClick = onClearError) {
-                                    Text("Fechar")
+                                Spacer(modifier = Modifier.height(8.dp))
+                                Row(
+                                    modifier = Modifier.fillMaxWidth(),
+                                    horizontalArrangement = Arrangement.End,
+                                ) {
+                                    TextButton(
+                                        onClick = {
+                                            clipboardManager.setText(AnnotatedString(message))
+                                        },
+                                    ) {
+                                        Icon(Icons.Default.ContentCopy, contentDescription = null)
+                                        Spacer(Modifier.width(6.dp))
+                                        Text("Copiar")
+                                    }
+                                    TextButton(onClick = onClearError) {
+                                        Text("Fechar")
+                                    }
                                 }
                             }
                         }
                     }
-                }
 
-                Spacer(modifier = Modifier.height(24.dp))
+                    Spacer(modifier = Modifier.height(18.dp))
 
-                Divider(color = CheerBrandBorder, thickness = 1.dp)
+                    Divider(color = CheerBrandBorder, thickness = 1.dp)
 
-                Spacer(modifier = Modifier.height(16.dp))
+                    Spacer(modifier = Modifier.height(12.dp))
 
-                TextButton(onClick = onNavigateToVolunteerRegister) {
-                    Text("Quero ser um voluntário", color = CheerPrimary)
-                }
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    ) {
+                        OutlinedButton(
+                            onClick = onNavigateToVolunteerRegister,
+                            modifier = Modifier.weight(1f),
+                            shape = RoundedCornerShape(12.dp),
+                        ) {
+                            Text("Voluntário", color = CheerPrimary, fontWeight = FontWeight.Bold)
+                        }
 
-                TextButton(onClick = onNavigateToInstitutionRegister) {
-                    Text("Sou uma instituição", color = CheerAccent)
+                        OutlinedButton(
+                            onClick = onNavigateToInstitutionRegister,
+                            modifier = Modifier.weight(1f),
+                            shape = RoundedCornerShape(12.dp),
+                        ) {
+                            Text("Instituição", color = CheerAccent, fontWeight = FontWeight.Bold)
+                        }
+                    }
                 }
             }
         }
