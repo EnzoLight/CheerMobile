@@ -6,6 +6,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Event
 import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.material.icons.filled.People
+import androidx.compose.material.icons.filled.VolunteerActivism
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -20,7 +21,9 @@ import com.cheermobile.ui.theme.*
 @Composable
 fun EventoCard(
     evento: Evento,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    actionLabel: String? = null,
+    onActionClick: (() -> Unit)? = null,
 ) {
     Card(
         modifier = modifier
@@ -78,6 +81,20 @@ fun EventoCard(
             EventDetail(icon = Icons.Default.LocationOn, text = formatLocation(evento))
             Spacer(modifier = Modifier.height(8.dp))
             EventDetail(icon = Icons.Default.People, text = formatCapacity(evento))
+
+            if (actionLabel != null && onActionClick != null) {
+                Spacer(modifier = Modifier.height(14.dp))
+                Button(
+                    onClick = onActionClick,
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = RoundedCornerShape(12.dp),
+                    colors = ButtonDefaults.buttonColors(containerColor = CheerAccent),
+                ) {
+                    Icon(Icons.Default.VolunteerActivism, contentDescription = null)
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text(actionLabel, fontWeight = FontWeight.Bold)
+                }
+            }
         }
     }
 }
@@ -92,7 +109,7 @@ private fun EventTypeChip(text: String) {
             text = text.replaceFirstChar { it.uppercase() },
             modifier = Modifier.padding(horizontal = 12.dp, vertical = 5.dp),
             style = MaterialTheme.typography.labelSmall,
-            color = CheerPrimary,
+            color = CheerText,
             fontWeight = FontWeight.Bold,
         )
     }

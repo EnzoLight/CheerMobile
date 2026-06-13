@@ -51,4 +51,8 @@ class SharedPreferencesCookieJar(context: Context) : CookieJar {
     private fun cookieKey(cookie: Cookie): String {
         return "${cookie.domain}|${cookie.path}|${cookie.name}"
     }
+
+    fun clear() {
+        preferences.edit().clear().apply()
+    }
 }

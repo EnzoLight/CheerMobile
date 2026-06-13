@@ -90,6 +90,8 @@ private fun toApiDateTime(date: String, time: String): String? {
 @Composable
 fun CriarEventoScreen(
     onBackClick: () -> Unit = {},
+    eventoIdToEdit: Int? = null,
+    onSaved: (() -> Unit)? = null,
     myViewModel: MyViewModel = viewModel(),
 ) {
     var form by remember { mutableStateOf(EventoForm()) }
@@ -122,8 +124,50 @@ fun CriarEventoScreen(
         }
     }
 
+    fun splitApiDate(value: String?): Pair<String, String> {
+        if (value.isNullOrBlank()) return "" to ""
+        return value.take(10) to value.substringAfter("T", "").take(5)
+    }
 
-    LaunchedEffect(Unit) { loadMeusEventos() }
+    fun fillFormFromEvento(evento: Evento) {
+        val (inicioData, inicioHora) = splitApiDate(evento.dataInicio)
+        val (fimData, fimHora) = splitApiDate(evento.dataTermino)
+        form = EventoForm(
+            titulo = evento.titulo.orEmpty(),
+            tipoEvento = evento.tipoEvento.orEmpty(),
+            constancia = evento.constancia.orEmpty(),
+            descricao = evento.descricao.orEmpty(),
+            numMaxVoluntarios = evento.maxVoluntarios?.toString().orEmpty(),
+            dataInicio = inicioData,
+            horaInicio = inicioHora,
+            dataFim = fimData,
+            horaFim = fimHora,
+            codigoPostal = evento.endereco?.cep.orEmpty(),
+            rua = evento.endereco?.rua.orEmpty(),
+            numero = evento.endereco?.numero.orEmpty(),
+            complemento = evento.endereco?.complemento.orEmpty(),
+            bairro = evento.endereco?.bairro.orEmpty(),
+            cidade = evento.endereco?.cidade.orEmpty(),
+            uf = evento.endereco?.uf.orEmpty(),
+        )
+    }
+
+    LaunchedEffect(eventoIdToEdit) {
+        if (eventoIdToEdit == null) {
+            loadMeusEventos()
+        } else {
+            listStatus = "loading"
+            myViewModel.getEvento(eventoIdToEdit) { success, evento, error ->
+                if (success && evento != null) {
+                    fillFormFromEvento(evento)
+                    listStatus = "loaded"
+                } else {
+                    listError = error ?: "Nao foi possivel carregar o evento."
+                    listStatus = "error"
+                }
+            }
+        }
+    }
 
     fun updateField(field: String, value: String) {
         form = when (field) {
@@ -198,13 +242,22 @@ fun CriarEventoScreen(
             ),
         )
 
-        myViewModel.createEvento(request) { success, message ->
+        val saveCallback: (Boolean, String) -> Unit = { success, message ->
             isSubmitting = false
             feedback = Pair(success, message)
             if (success) {
                 form = EventoForm()
-                loadMeusEventos()
+                if (eventoIdToEdit == null) {
+                    loadMeusEventos()
+                }
+                onSaved?.invoke()
             }
+        }
+
+        if (eventoIdToEdit == null) {
+            myViewModel.createEvento(request, saveCallback)
+        } else {
+            myViewModel.updateEvento(eventoIdToEdit, request, saveCallback)
         }
     }
 
@@ -215,15 +268,17 @@ fun CriarEventoScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Criar Evento", fontWeight = FontWeight.Bold) },
+                title = { Text(if (eventoIdToEdit == null) "Criar Evento" else "Editar Evento", fontWeight = FontWeight.Bold) },
                 navigationIcon = {
                     IconButton(onClick = onBackClick) {
                         Icon(Icons.Default.ArrowBack, contentDescription = "Voltar")
                     }
                 },
                 actions = {
-                    IconButton(onClick = { loadMeusEventos() }) {
-                        Icon(Icons.Default.Refresh, contentDescription = "Recarregar eventos")
+                    if (eventoIdToEdit == null) {
+                        IconButton(onClick = { loadMeusEventos() }) {
+                            Icon(Icons.Default.Refresh, contentDescription = "Recarregar eventos")
+                        }
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
@@ -247,8 +302,12 @@ fun CriarEventoScreen(
             ) {
                 EventosPanelHeader(
                     kicker = "INSTITUIÇÃO",
-                    title = "Criar evento",
-                    description = "Informe os detalhes para publicar uma nova oportunidade de voluntariado.",
+                    title = if (eventoIdToEdit == null) "Criar evento" else "Editar evento",
+                    description = if (eventoIdToEdit == null) {
+                        "Informe os detalhes para publicar uma nova oportunidade de voluntariado."
+                    } else {
+                        "Atualize os detalhes da oportunidade publicada."
+                    },
                 )
 
                 Card(
@@ -450,7 +509,11 @@ fun CriarEventoScreen(
                                 Spacer(Modifier.width(8.dp))
                             }
                             Text(
-                                text = if (isSubmitting) "Criando evento..." else "Criar evento",
+                                text = if (isSubmitting) {
+                                    if (eventoIdToEdit == null) "Criando evento..." else "Salvando evento..."
+                                } else {
+                                    if (eventoIdToEdit == null) "Criar evento" else "Salvar evento"
+                                },
                                 fontWeight = FontWeight.Bold,
                                 fontSize = 16.sp,
                             )
@@ -459,7 +522,7 @@ fun CriarEventoScreen(
                 }
             }
 
-            Column(
+            if (eventoIdToEdit == null) Column(
                 modifier = Modifier.fillMaxWidth(),
             ) {
                 EventosPanelHeader(

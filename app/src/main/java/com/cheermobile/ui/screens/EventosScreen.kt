@@ -28,6 +28,9 @@ fun EventosScreen(
     errorMessage: String? = null,
     onBackClick: () -> Unit,
     onRefresh: (() -> Unit)? = null,
+    canSubscribe: Boolean = false,
+    onSubscribe: ((Evento) -> Unit)? = null,
+    feedbackMessage: String? = null,
 ) {
     var searchTerm by remember { mutableStateOf("") }
     val filteredEventos by remember(eventos, searchTerm) {
@@ -101,6 +104,23 @@ fun EventosScreen(
 
             Spacer(modifier = Modifier.height(16.dp))
 
+            feedbackMessage?.let {
+                Surface(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(bottom = 12.dp),
+                    shape = MaterialTheme.shapes.medium,
+                    color = CheerAccentSoft,
+                ) {
+                    Text(
+                        text = it,
+                        modifier = Modifier.padding(12.dp),
+                        color = CheerText,
+                        fontWeight = FontWeight.SemiBold,
+                    )
+                }
+            }
+
             if (isLoading) {
                 Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                     CircularProgressIndicator(color = CheerPrimary)
@@ -157,7 +177,15 @@ fun EventosScreen(
                         Spacer(modifier = Modifier.height(16.dp))
                     }
                     items(filteredEventos, key = { it.id }) { evento ->
-                        EventoCard(evento = evento)
+                        EventoCard(
+                            evento = evento,
+                            actionLabel = if (canSubscribe) "Inscrever-se" else null,
+                            onActionClick = if (canSubscribe && onSubscribe != null) {
+                                { onSubscribe(evento) }
+                            } else {
+                                null
+                            },
+                        )
                     }
                 }
             }

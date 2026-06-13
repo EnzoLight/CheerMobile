@@ -1,10 +1,10 @@
 package com.cheermobile.ui.screens
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
@@ -16,10 +16,13 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.cheermobile.R
 import com.cheermobile.ui.theme.*
 import androidx.compose.ui.tooling.preview.Preview
 
@@ -44,39 +47,50 @@ fun HomeScreen(onStartClick: () -> Unit) {
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .height(400.dp)
-                        .clip(RoundedCornerShape(bottomStart = 40.dp, bottomEnd = 40.dp))
+                        .height(430.dp)
+                        .clip(RoundedCornerShape(bottomStart = 28.dp, bottomEnd = 28.dp))
                         .background(
                             brush = Brush.verticalGradient(
-                                colors = listOf(CheerPrimary, CheerPrimarySoft)
+                                colors = listOf(CheerPrimary, Color(0xFF0A2F91))
                             )
                         )
                 ) {
+                    Box(
+                        modifier = Modifier
+                            .align(Alignment.BottomCenter)
+                            .fillMaxWidth()
+                            .height(140.dp)
+                            .background(CheerAccent.copy(alpha = 0.18f))
+                    )
                     Column(
                         modifier = Modifier
                             .fillMaxSize()
-                            .padding(24.dp),
+                            .padding(horizontal = 24.dp, vertical = 34.dp),
                         horizontalAlignment = Alignment.CenterHorizontally,
                         verticalArrangement = Arrangement.Center
                     ) {
                         Surface(
-                            modifier = Modifier.size(80.dp),
-                            shape = CircleShape,
-                            color = Color.White.copy(alpha = 0.2f)
+                            modifier = Modifier.size(132.dp),
+                            shape = RoundedCornerShape(28.dp),
+                            color = Color.White,
+                            shadowElevation = 10.dp,
                         ) {
-                            Icon(
-                                imageVector = Icons.Default.Favorite,
-                                contentDescription = null,
-                                tint = Color.White,
-                                modifier = Modifier.padding(16.dp).size(48.dp)
+                            Image(
+                                painter = painterResource(id = R.drawable.logo_cheer),
+                                contentDescription = "Logo Cheer",
+                                modifier = Modifier
+                                    .fillMaxSize()
+                                    .padding(10.dp)
+                                    .clip(RoundedCornerShape(22.dp)),
+                                contentScale = ContentScale.Crop,
                             )
                         }
 
-                        Spacer(modifier = Modifier.height(16.dp))
+                        Spacer(modifier = Modifier.height(24.dp))
 
                         Text(
                             text = "Cheer",
-                            fontSize = 56.sp,
+                            fontSize = 54.sp,
                             fontWeight = FontWeight.ExtraBold,
                             color = Color.White
                         )
@@ -92,12 +106,13 @@ fun HomeScreen(onStartClick: () -> Unit) {
                         Spacer(modifier = Modifier.height(24.dp))
 
                         Text(
-                            text = "Conecte sua vontade de ajudar a ações reais.",
+                            text = "Encontre ações sociais, acompanhe inscrições e organize eventos em um só app.",
                             fontSize = 20.sp,
                             color = Color.White,
                             textAlign = TextAlign.Center,
                             fontWeight = FontWeight.Medium,
-                            modifier = Modifier.padding(horizontal = 20.dp)
+                            lineHeight = 26.sp,
+                            modifier = Modifier.padding(horizontal = 6.dp)
                         )
                     }
                 }
@@ -111,11 +126,13 @@ fun HomeScreen(onStartClick: () -> Unit) {
                         modifier = Modifier
                             .fillMaxWidth()
                             .height(64.dp),
-                        shape = RoundedCornerShape(20.dp),
+                        shape = RoundedCornerShape(16.dp),
                         colors = ButtonDefaults.buttonColors(containerColor = CheerAccent),
                         elevation = ButtonDefaults.buttonElevation(8.dp)
                     ) {
-                        Text("VAMOS COMEÇAR", fontSize = 18.sp, fontWeight = FontWeight.Bold)
+                        Icon(Icons.Default.Login, contentDescription = null)
+                        Spacer(modifier = Modifier.width(10.dp))
+                        Text("ENTRAR NO CHEER", fontSize = 18.sp, fontWeight = FontWeight.Bold)
                     }
                 }
             }

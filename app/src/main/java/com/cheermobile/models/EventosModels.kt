@@ -23,9 +23,13 @@ data class InscricaoRequest(
 )
 
 data class InscricaoResponse(
-    val status: String,
-    val message: String,
-    @SerializedName("data_inscricao") val dataInscricao: String
+    val status: String? = null,
+    val message: String? = null,
+    val data: InscricaoStatus? = null,
+)
+
+data class InscricaoStatus(
+    val status: String? = null,
 )
 
 // Criação de evento

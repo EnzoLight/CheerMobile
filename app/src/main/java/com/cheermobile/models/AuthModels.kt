@@ -67,7 +67,11 @@ data class UserProfileData(
     val nome: String,
     val email: String,
     val tipo: String, // "voluntario" ou "instituicao"
-    val telefone: String? = null
+    val telefone: String? = null,
+    val categoria: String? = null,
+    val cidade: String? = null,
+    val uf: String? = null,
+    val endereco: Endereco? = null,
 )
 
 

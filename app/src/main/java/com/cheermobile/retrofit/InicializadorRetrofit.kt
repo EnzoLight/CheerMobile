@@ -22,15 +22,23 @@ object RetrofitClient {
         setLevel(HttpLoggingInterceptor.Level.BODY) // Para ver os logs completos das requisições e respostas
     }
 
-    private val okHttpClient: OkHttpClient by lazy {
+    private val cookieJar: SharedPreferencesCookieJar by lazy {
         val context = requireNotNull(applicationContext) {
             "RetrofitClient.init(context) must be called before using the API."
         }
 
+        SharedPreferencesCookieJar(context)
+    }
+
+    private val okHttpClient: OkHttpClient by lazy {
         OkHttpClient.Builder()
-            .cookieJar(SharedPreferencesCookieJar(context))
+            .cookieJar(cookieJar)
             .addInterceptor(loggingInterceptor)
             .build()
+    }
+
+    fun clearSessionCookies() {
+        cookieJar.clear()
     }
 
     val instance: CheerApiService by lazy {

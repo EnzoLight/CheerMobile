@@ -10,11 +10,15 @@ import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.launch
 import com.cheermobile.models.RegisterVoluntarioRequest
 import com.cheermobile.models.Evento
-import com.cheermobile.models.AuthResponse
 import com.cheermobile.models.CreateEventoRequest
-import com.cheermobile.models.LoginRequest
 import com.cheermobile.models.UserProfileData
 import com.cheermobile.models.MobileExchangeRequest
+import com.cheermobile.models.Inscricao
+import com.cheermobile.models.InscricaoRequest
+import com.cheermobile.models.InscritoEvento
+import com.cheermobile.models.DashboardData
+import com.cheermobile.models.LogEvento
+import com.cheermobile.models.StatusInscritoRequest
 //import com.cheermobile.models.RegisterInstituicaoRequest
 import com.cheermobile.retrofit.RetrofitClient
 import java.util.UUID
@@ -97,6 +101,21 @@ class MyViewModel : ViewModel() {
     }
 }
 
+    fun getEvento(eventoId: Int, onResult: (Boolean, Evento?, String?) -> Unit) {
+        viewModelScope.launch {
+            try {
+                val response = RetrofitClient.instance.getEvento(eventoId)
+                if (response.isSuccessful) {
+                    onResult(true, response.body()?.data, null)
+                } else {
+                    onResult(false, null, response.errorBody()?.string() ?: "Nao foi possivel carregar o evento.")
+                }
+            } catch (e: Exception) {
+                onResult(false, null, "Erro de rede: ${e.message}")
+            }
+        }
+    }
+
     fun getMeusEventos(onResult: (Boolean, List<Evento>, String?) -> Unit) {
         viewModelScope.launch {
             try {
@@ -129,6 +148,143 @@ class MyViewModel : ViewModel() {
                 }
             } catch (e: Exception) {
                 onResult(false, emptyList(), "Erro de rede: verifique sua conexao.")
+            }
+        }
+    }
+
+    fun inscreverEvento(eventoId: Int, onResult: (Boolean, String) -> Unit) {
+        viewModelScope.launch {
+            try {
+                val response = RetrofitClient.instance.inscreverEvento(InscricaoRequest(eventoId))
+                if (response.isSuccessful) {
+                    val status = response.body()?.data?.status ?: response.body()?.status ?: "pendente"
+                    onResult(true, "Inscricao enviada. Status: $status.")
+                } else {
+                    onResult(false, response.errorBody()?.string() ?: "Nao foi possivel fazer a inscricao.")
+                }
+            } catch (e: Exception) {
+                onResult(false, "Erro de rede: ${e.message}")
+            }
+        }
+    }
+
+    fun getMinhasInscricoes(onResult: (Boolean, List<Inscricao>, String?) -> Unit) {
+        viewModelScope.launch {
+            try {
+                val response = RetrofitClient.instance.getMinhasInscricoes()
+                val body = response.body()
+                if (response.isSuccessful && body?.status != "error") {
+                    onResult(true, body?.data ?: emptyList(), null)
+                } else {
+                    onResult(false, emptyList(), body?.message ?: "Nao foi possivel carregar suas inscricoes.")
+                }
+            } catch (e: Exception) {
+                onResult(false, emptyList(), "Erro de rede: ${e.message}")
+            }
+        }
+    }
+
+    fun getDashboardInstituicao(onResult: (Boolean, DashboardData?, String?) -> Unit) {
+        viewModelScope.launch {
+            try {
+                val response = RetrofitClient.instance.getDashboardInstituicao()
+                val body = response.body()
+                if (response.isSuccessful && body?.status != "error") {
+                    onResult(true, body?.data, null)
+                } else {
+                    onResult(false, null, body?.message ?: "Nao foi possivel carregar o dashboard.")
+                }
+            } catch (e: Exception) {
+                onResult(false, null, "Erro de rede: ${e.message}")
+            }
+        }
+    }
+
+    fun getLogs(
+        filters: Map<String, String> = mapOf("per_page" to "100"),
+        onResult: (Boolean, List<LogEvento>, Int, String?) -> Unit,
+    ) {
+        viewModelScope.launch {
+            try {
+                val response = RetrofitClient.instance.getLogs(filters.filterValues { it.isNotBlank() })
+                val body = response.body()
+                if (response.isSuccessful && body?.status != "error") {
+                    onResult(true, body?.data?.items ?: emptyList(), body?.data?.pagination?.total ?: 0, null)
+                } else {
+                    onResult(false, emptyList(), 0, body?.message ?: "Nao foi possivel carregar os logs.")
+                }
+            } catch (e: Exception) {
+                onResult(false, emptyList(), 0, "Erro de rede: ${e.message}")
+            }
+        }
+    }
+
+    fun getInscritosEvento(eventoId: Int, onResult: (Boolean, List<InscritoEvento>, String?) -> Unit) {
+        viewModelScope.launch {
+            try {
+                val response = RetrofitClient.instance.getInscritosEvento(eventoId)
+                val body = response.body()
+                if (response.isSuccessful && body?.status != "error") {
+                    onResult(true, body?.data ?: emptyList(), null)
+                } else {
+                    onResult(false, emptyList(), body?.message ?: "Nao foi possivel carregar os inscritos.")
+                }
+            } catch (e: Exception) {
+                onResult(false, emptyList(), "Erro de rede: ${e.message}")
+            }
+        }
+    }
+
+    fun updateStatusInscrito(
+        eventoId: Int,
+        voluntarioId: Int,
+        status: String,
+        onResult: (Boolean, String) -> Unit,
+    ) {
+        viewModelScope.launch {
+            try {
+                val response = RetrofitClient.instance.updateStatusInscrito(
+                    eventoId,
+                    voluntarioId,
+                    StatusInscritoRequest(status),
+                )
+                if (response.isSuccessful) {
+                    onResult(true, "Status atualizado.")
+                } else {
+                    onResult(false, response.errorBody()?.string() ?: "Nao foi possivel atualizar o status.")
+                }
+            } catch (e: Exception) {
+                onResult(false, "Erro de rede: ${e.message}")
+            }
+        }
+    }
+
+    fun deleteEvento(eventoId: Int, onResult: (Boolean, String) -> Unit) {
+        viewModelScope.launch {
+            try {
+                val response = RetrofitClient.instance.deleteEvento(eventoId)
+                if (response.isSuccessful) {
+                    onResult(true, "Evento excluido.")
+                } else {
+                    onResult(false, response.errorBody()?.string() ?: "Nao foi possivel excluir o evento.")
+                }
+            } catch (e: Exception) {
+                onResult(false, "Erro de rede: ${e.message}")
+            }
+        }
+    }
+
+    fun updateEvento(eventoId: Int, request: CreateEventoRequest, onResult: (Boolean, String) -> Unit) {
+        viewModelScope.launch {
+            try {
+                val response = RetrofitClient.instance.updateEvento(eventoId, request)
+                if (response.isSuccessful) {
+                    onResult(true, "Evento atualizado.")
+                } else {
+                    onResult(false, response.errorBody()?.string() ?: "Nao foi possivel atualizar o evento.")
+                }
+            } catch (e: Exception) {
+                onResult(false, "Erro de rede: ${e.message}")
             }
         }
     }
@@ -221,6 +377,21 @@ class MyViewModel : ViewModel() {
                 }
             } catch (e: Exception) {
                 onResult(false, null, e.message)
+            }
+        }
+    }
+
+    fun logout(onResult: (Boolean, String) -> Unit) {
+        viewModelScope.launch {
+            try {
+                RetrofitClient.instance.logout()
+                RetrofitClient.clearSessionCookies()
+                pendingMobileState = null
+                onResult(true, "Sessao encerrada.")
+            } catch (e: Exception) {
+                RetrofitClient.clearSessionCookies()
+                pendingMobileState = null
+                onResult(true, "Sessao local encerrada.")
             }
         }
     }
