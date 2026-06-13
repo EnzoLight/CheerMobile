@@ -3,6 +3,7 @@ package com.cheermobile
 import android.content.Context
 import android.content.Intent
 import android.net.Uri
+import android.util.Log
 import com.cheermobile.models.RegisterInstituicaoRequest
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -191,10 +192,19 @@ class MyViewModel : ViewModel() {
                 if (response.isSuccessful) {
                     onResult(true, response.body()?.data, null)
                 } else {
-                    onResult(false, null, "Falha na troca do código: ${response.code()}")
+                    val errorBody = response.errorBody()?.string()
+                    val message = listOfNotNull(
+                        "Falha na troca do codigo: HTTP ${response.code()}",
+                        errorBody?.takeIf { it.isNotBlank() },
+                    ).joinToString("\n")
+
+                    Log.e("CheerAuth", message)
+                    onResult(false, null, message)
                 }
             } catch (e: Exception) {
-                onResult(false, null, "Erro de rede: ${e.message}")
+                val message = "Erro de rede: ${e::class.java.simpleName}: ${e.message}"
+                Log.e("CheerAuth", message, e)
+                onResult(false, null, message)
             }
         }
     }
