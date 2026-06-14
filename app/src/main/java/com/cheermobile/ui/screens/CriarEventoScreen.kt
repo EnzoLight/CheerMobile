@@ -1,11 +1,15 @@
 package com.cheermobile.ui.screens
 
+import android.app.TimePickerDialog
+import android.text.format.DateFormat
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.AccessTime
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.Save
@@ -14,6 +18,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.tooling.preview.Preview
@@ -28,6 +33,7 @@ import com.cheermobile.ui.theme.*
 import java.time.LocalDateTime
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
+import java.util.Calendar
 
 // ---------------------------------------------------------------------------
 // Estado do formulário
@@ -58,6 +64,25 @@ private data class EventoForm(
 // ---------------------------------------------------------------------------
 
 private fun onlyDigits(value: String) = value.filter { it.isDigit() }
+
+private fun parseHourMinute(value: String): Pair<Int, Int>? {
+    val parts = value.split(":")
+
+    if (parts.size != 2) {
+        return null
+    }
+
+    val hour = parts[0].toIntOrNull()
+    val minute = parts[1].toIntOrNull()
+
+    if (hour == null || minute == null || hour !in 0..23 || minute !in 0..59) {
+        return null
+    }
+
+    return hour to minute
+}
+
+private fun formatHourMinute(hour: Int, minute: Int): String = String.format("%02d:%02d", hour, minute)
 
 private fun todayString(): String {
     val calendar = java.util.Calendar.getInstance()
@@ -441,12 +466,11 @@ fun CriarEventoScreen(
                                 placeholder = today,
                                 keyboardType = KeyboardType.Number,
                             )
-                            CheerTextField(
+                            CheerTimeField(
                                 label = "Hora de início *",
                                 value = form.horaInicio,
-                                onValueChange = { updateField("horaInicio", it) },
                                 placeholder = "14:00",
-                                keyboardType = KeyboardType.Number,
+                                onValueChange = { updateField("horaInicio", it) },
                             )
                         }
                         Column(verticalArrangement = Arrangement.spacedBy(0.dp)) {
@@ -457,12 +481,12 @@ fun CriarEventoScreen(
                                 placeholder = today,
                                 keyboardType = KeyboardType.Number,
                             )
-                            CheerTextField(
+                            CheerTimeField(
                                 label = "Hora de fim",
                                 value = form.horaFim,
-                                onValueChange = { updateField("horaFim", it) },
                                 placeholder = "18:00",
-                                keyboardType = KeyboardType.Number,
+                                onValueChange = { updateField("horaFim", it) },
+                                optional = true,
                             )
                         }
 
@@ -759,6 +783,73 @@ private fun CepStatusText(status: Pair<Boolean, String>?) {
             style = MaterialTheme.typography.bodySmall,
             modifier = Modifier.padding(bottom = 12.dp),
         )
+    }
+}
+
+@Composable
+private fun CheerTimeField(
+    modifier: Modifier = Modifier,
+    label: String,
+    value: String,
+    placeholder: String,
+    onValueChange: (String) -> Unit,
+    optional: Boolean = false,
+) {
+    val context = LocalContext.current
+    val calendar = remember { Calendar.getInstance() }
+
+    fun showPicker() {
+        val currentValue = parseHourMinute(value)
+        val initialHour = currentValue?.first ?: calendar.get(Calendar.HOUR_OF_DAY)
+        val initialMinute = currentValue?.second ?: calendar.get(Calendar.MINUTE)
+
+        TimePickerDialog(
+            context,
+            { _, hour, minute -> onValueChange(formatHourMinute(hour, minute)) },
+            initialHour,
+            initialMinute,
+            DateFormat.is24HourFormat(context),
+        ).show()
+    }
+
+    Column(modifier = modifier.padding(bottom = 12.dp)) {
+        Text(label, style = MaterialTheme.typography.labelMedium, color = CheerText, fontWeight = FontWeight.Medium)
+        Spacer(Modifier.height(4.dp))
+        OutlinedButton(
+            onClick = { showPicker() },
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(56.dp),
+            shape = RoundedCornerShape(10.dp),
+            border = BorderStroke(1.dp, CheerBrandBorder),
+            colors = ButtonDefaults.outlinedButtonColors(
+                containerColor = CheerSurface,
+                contentColor = CheerText,
+            ),
+            contentPadding = PaddingValues(horizontal = 14.dp),
+        ) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                Icon(Icons.Default.AccessTime, contentDescription = null, tint = CheerPrimary)
+                Spacer(Modifier.width(10.dp))
+                Text(
+                    text = value.ifBlank { placeholder },
+                    color = if (value.isBlank()) CheerMutedText else CheerText,
+                    modifier = Modifier.weight(1f),
+                )
+            }
+        }
+        if (optional && value.isNotBlank()) {
+            TextButton(
+                onClick = { onValueChange("") },
+                modifier = Modifier.align(Alignment.End),
+                contentPadding = PaddingValues(horizontal = 8.dp),
+            ) {
+                Text("Limpar")
+            }
+        }
     }
 }
 
