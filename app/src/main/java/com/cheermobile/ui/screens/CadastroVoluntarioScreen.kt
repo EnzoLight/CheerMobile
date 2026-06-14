@@ -1,17 +1,21 @@
 package com.cheermobile.ui.screens
 
+import android.app.DatePickerDialog
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.CalendarMonth
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
@@ -23,8 +27,20 @@ import com.cheermobile.MyViewModel
 import com.cheermobile.models.EnderecoRequest
 import com.cheermobile.models.RegisterVoluntarioRequest
 import com.cheermobile.ui.theme.*
+import java.time.LocalDate
+import java.time.format.DateTimeFormatter
 
 private fun onlyDigits(value: String) = value.filter { it.isDigit() }
+
+private fun parseFormDate(value: String): LocalDate? {
+    if (value.isBlank()) return null
+
+    return try {
+        LocalDate.parse(value.trim())
+    } catch (e: Exception) {
+        null
+    }
+}
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -125,8 +141,12 @@ fun CadastroVoluntarioScreen(
 
                             CustomField(value = nome, onValueChange = { nome = it }, label = "Nome Completo *")
                             CustomField(value = email, onValueChange = { email = it }, label = "E-mail *")
-                            CustomField(value = cpf, onValueChange = { cpf = it }, label = "CPF *")
-                            CustomField(value = dataNascimento, onValueChange = { dataNascimento = it }, label = "Nascimento (AAAA-MM-DD) *")
+                            CustomField(value = cpf, onValueChange = { cpf = onlyDigits(it).take(11) }, label = "CPF *")
+                            DatePickerField(
+                                value = dataNascimento,
+                                onValueChange = { dataNascimento = it },
+                                label = "Nascimento *",
+                            )
 
                             Spacer(Modifier.height(16.dp))
                             Text("Segurança", fontWeight = FontWeight.Bold, color = CheerPrimary, fontSize = 18.sp)
@@ -189,6 +209,14 @@ fun CadastroVoluntarioScreen(
                                 feedbackMessage = "As senhas precisam ser iguais."
                                 return@Button
                             }
+                            if (dataNascimento.isBlank()) {
+                                feedbackMessage = "Informe sua data de nascimento."
+                                return@Button
+                            }
+                            if (parseFormDate(dataNascimento)?.isAfter(LocalDate.now()) == true) {
+                                feedbackMessage = "A data de nascimento não pode ser futura."
+                                return@Button
+                            }
                             isSubmitting = true
                             val endereco = EnderecoRequest(
                                 rua = rua.trim(),
@@ -199,7 +227,17 @@ fun CadastroVoluntarioScreen(
                                 uf = uf.trim().uppercase(),
                                 codigoPostal = onlyDigits(cep),
                             )
-                            val request = RegisterVoluntarioRequest(nome, email, password, null, cpf, null, "M", dataNascimento, endereco)
+                            val request = RegisterVoluntarioRequest(
+                                nome = nome.trim(),
+                                email = email.trim(),
+                                password = password,
+                                telefone = null,
+                                cpf = onlyDigits(cpf),
+                                rg = null,
+                                genero = "M",
+                                dataNascimento = dataNascimento,
+                                endereco = endereco,
+                            )
 
                             myViewModel.registerNewVoluntario(request) { success, message ->
                                 isSubmitting = false
@@ -217,6 +255,63 @@ fun CadastroVoluntarioScreen(
                     }
                     Spacer(Modifier.height(40.dp))
                 }
+            }
+        }
+    }
+}
+
+@Composable
+private fun DatePickerField(
+    value: String,
+    onValueChange: (String) -> Unit,
+    label: String,
+) {
+    val context = LocalContext.current
+
+    fun showPicker() {
+        val selectedDate = parseFormDate(value)
+        val initialDate = selectedDate ?: LocalDate.now().minusYears(18)
+
+        val dialog = DatePickerDialog(
+            context,
+            { _, year, month, day ->
+                onValueChange(LocalDate.of(year, month + 1, day).format(DateTimeFormatter.ISO_LOCAL_DATE))
+            },
+            initialDate.year,
+            initialDate.monthValue - 1,
+            initialDate.dayOfMonth,
+        )
+        dialog.datePicker.maxDate = System.currentTimeMillis()
+        dialog.show()
+    }
+
+    Column(modifier = Modifier.padding(vertical = 4.dp)) {
+        Text(label, color = CheerText, style = MaterialTheme.typography.labelMedium, fontWeight = FontWeight.Medium)
+        Spacer(Modifier.height(4.dp))
+        OutlinedButton(
+            onClick = { showPicker() },
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(56.dp),
+            shape = RoundedCornerShape(12.dp),
+            border = BorderStroke(1.dp, CheerBrandBorder),
+            colors = ButtonDefaults.outlinedButtonColors(
+                containerColor = CheerSurface,
+                contentColor = CheerText,
+            ),
+            contentPadding = PaddingValues(horizontal = 14.dp),
+        ) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                Icon(Icons.Default.CalendarMonth, contentDescription = null, tint = CheerPrimary)
+                Spacer(Modifier.width(10.dp))
+                Text(
+                    text = value.ifBlank { "Selecionar data" },
+                    color = if (value.isBlank()) CheerMutedText else CheerText,
+                    modifier = Modifier.weight(1f),
+                )
             }
         }
     }
