@@ -78,7 +78,10 @@ fun CadastroInstituicaoScreen(
 ) {
     var form by remember { mutableStateOf(CadastroInstituicaoForm()) }
     var feedback by remember { mutableStateOf<Pair<Boolean, String>?>(null) }   // true = sucesso
+    var cepStatus by remember { mutableStateOf<Pair<Boolean, String>?>(null) }
     var isSubmitting by remember { mutableStateOf(false) }
+    val latestFormState = rememberUpdatedState(form)
+    val cepDigits = onlyDigits(form.endereco.codigoPostal)
 
     // Validações de senha em tempo real
     val password = form.password
@@ -89,6 +92,38 @@ fun CadastroInstituicaoScreen(
         "minLength"  to (password.length >= 8),
     )
     val hasValidPassword = validations.values.all { it }
+
+    LaunchedEffect(cepDigits) {
+        if (cepDigits.length != 8) {
+            cepStatus = null
+            return@LaunchedEffect
+        }
+
+        val requestedCep = cepDigits
+        cepStatus = Pair(true, "Buscando endereço...")
+
+        myViewModel.buscarEnderecoPorCep(requestedCep) { success, address, message ->
+            if (onlyDigits(latestFormState.value.endereco.codigoPostal) != requestedCep) {
+                return@buscarEnderecoPorCep
+            }
+
+            if (success && address != null) {
+                val current = latestFormState.value
+                form = current.copy(
+                    endereco = current.endereco.copy(
+                        codigoPostal = requestedCep,
+                        rua = address.logradouro.orEmpty(),
+                        bairro = address.bairro.orEmpty(),
+                        cidade = address.localidade.orEmpty(),
+                        uf = address.uf.orEmpty(),
+                    ),
+                )
+                cepStatus = Pair(true, "Endereço localizado.")
+            } else {
+                cepStatus = Pair(false, message ?: "CEP não encontrado.")
+            }
+        }
+    }
 
     fun updateField(field: String, value: String) {
         form = when (field) {
@@ -111,13 +146,13 @@ fun CadastroInstituicaoScreen(
         val e = form.endereco
         form = form.copy(
             endereco = when (field) {
-                "codigoPostal" -> e.copy(codigoPostal = value)
                 "rua"          -> e.copy(rua = value)
                 "numero"       -> e.copy(numero = value)
                 "complemento"  -> e.copy(complemento = value)
                 "bairro"       -> e.copy(bairro = value)
                 "cidade"       -> e.copy(cidade = value)
-                "uf"           -> e.copy(uf = value)
+                "codigoPostal" -> e.copy(codigoPostal = onlyDigits(value).take(8))
+                "uf"           -> e.copy(uf = value.uppercase().take(2))
                 else           -> e
             }
         )
@@ -376,6 +411,7 @@ fun CadastroInstituicaoScreen(
                             placeholder = "SP",
                         )
                     }
+                    CepStatusMessage(cepStatus)
 
                     CheerTextField(
                         label = "Rua *",
@@ -618,6 +654,18 @@ fun CadastroInstituicaoScreenPreview() {
         CadastroInstituicaoScreen(
             onBackClick = {},
             onSuccessNavigate = {},
+        )
+    }
+}
+
+@Composable
+private fun CepStatusMessage(status: Pair<Boolean, String>?) {
+    status?.let { (success, message) ->
+        Text(
+            text = message,
+            color = if (success) Color(0xFF2E7D32) else Color(0xFFC62828),
+            style = MaterialTheme.typography.bodySmall,
+            modifier = Modifier.padding(bottom = 12.dp),
         )
     }
 }

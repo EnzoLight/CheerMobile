@@ -24,6 +24,8 @@ import com.cheermobile.models.EnderecoRequest
 import com.cheermobile.models.RegisterVoluntarioRequest
 import com.cheermobile.ui.theme.*
 
+private fun onlyDigits(value: String) = value.filter { it.isDigit() }
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CadastroVoluntarioScreen(
@@ -47,9 +49,38 @@ fun CadastroVoluntarioScreen(
 
     var isSubmitting by remember { mutableStateOf(false) }
     var feedbackMessage by remember { mutableStateOf("") }
+    var cepStatus by remember { mutableStateOf<Pair<Boolean, String>?>(null) }
+    val latestCep = rememberUpdatedState(cep)
+    val cepDigits = onlyDigits(cep)
 
     // Validação: Senhas coincidem?
     val passwordsMatch = password == confirmPassword && password.isNotEmpty()
+
+    LaunchedEffect(cepDigits) {
+        if (cepDigits.length != 8) {
+            cepStatus = null
+            return@LaunchedEffect
+        }
+
+        val requestedCep = cepDigits
+        cepStatus = Pair(true, "Buscando endereço...")
+
+        myViewModel.buscarEnderecoPorCep(requestedCep) { success, address, message ->
+            if (onlyDigits(latestCep.value) != requestedCep) {
+                return@buscarEnderecoPorCep
+            }
+
+            if (success && address != null) {
+                rua = address.logradouro.orEmpty()
+                bairro = address.bairro.orEmpty()
+                cidade = address.localidade.orEmpty()
+                uf = address.uf.orEmpty()
+                cepStatus = Pair(true, "Endereço localizado.")
+            } else {
+                cepStatus = Pair(false, message ?: "CEP não encontrado.")
+            }
+        }
+    }
 
     Box(
         modifier = Modifier
@@ -126,14 +157,22 @@ fun CadastroVoluntarioScreen(
                             Text("Endereço", fontWeight = FontWeight.Bold, color = CheerPrimary, fontSize = 18.sp)
                             Spacer(Modifier.height(16.dp))
 
-                            CustomField(value = cep, onValueChange = { cep = it }, label = "CEP *")
+                            CustomField(
+                                value = cep,
+                                onValueChange = {
+                                    cep = onlyDigits(it).take(8)
+                                    feedbackMessage = ""
+                                },
+                                label = "CEP *",
+                            )
+                            CepStatusText(cepStatus)
                             CustomField(value = rua, onValueChange = { rua = it }, label = "Rua *")
                             CustomField(value = bairro, onValueChange = { bairro = it }, label = "Bairro *")
 
                             Row(modifier = Modifier.fillMaxWidth()) {
                                 Box(modifier = Modifier.weight(1f)) { CustomField(value = numero, onValueChange = { numero = it }, label = "Nº") }
                                 Spacer(Modifier.width(8.dp))
-                                Box(modifier = Modifier.weight(1f)) { CustomField(value = uf, onValueChange = { uf = it }, label = "UF") }
+                                Box(modifier = Modifier.weight(1f)) { CustomField(value = uf, onValueChange = { uf = it.uppercase().take(2) }, label = "UF") }
                             }
                             CustomField(value = cidade, onValueChange = { cidade = it }, label = "Cidade *")
                         }
@@ -151,7 +190,15 @@ fun CadastroVoluntarioScreen(
                                 return@Button
                             }
                             isSubmitting = true
-                            val endereco = EnderecoRequest(rua, numero, "", bairro, cidade, uf, cep)
+                            val endereco = EnderecoRequest(
+                                rua = rua.trim(),
+                                numero = numero.trim().ifBlank { "S/N" },
+                                complemento = "",
+                                bairro = bairro.trim(),
+                                cidade = cidade.trim(),
+                                uf = uf.trim().uppercase(),
+                                codigoPostal = onlyDigits(cep),
+                            )
                             val request = RegisterVoluntarioRequest(nome, email, password, null, cpf, null, "M", dataNascimento, endereco)
 
                             myViewModel.registerNewVoluntario(request) { success, message ->
@@ -172,6 +219,20 @@ fun CadastroVoluntarioScreen(
                 }
             }
         }
+    }
+}
+
+@Composable
+private fun CepStatusText(status: Pair<Boolean, String>?) {
+    status?.let { (success, message) ->
+        Text(
+            text = message,
+            color = if (success) Color(0xFF2E7D32) else Color(0xFFC62828),
+            style = MaterialTheme.typography.bodySmall,
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(bottom = 8.dp),
+        )
     }
 }
 

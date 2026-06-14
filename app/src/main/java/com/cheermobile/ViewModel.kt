@@ -21,8 +21,10 @@ import com.cheermobile.models.InscritoEvento
 import com.cheermobile.models.DashboardData
 import com.cheermobile.models.LogEvento
 import com.cheermobile.models.StatusInscritoRequest
+import com.cheermobile.models.ViaCepAddressResponse
 //import com.cheermobile.models.RegisterInstituicaoRequest
 import com.cheermobile.retrofit.RetrofitClient
+import com.cheermobile.retrofit.ViaCepClient
 import java.util.UUID
 
 class MyViewModel : ViewModel() {
@@ -137,6 +139,30 @@ class MyViewModel : ViewModel() {
                 }
             } catch (e: Exception) {
                 onResult(false, emptyList<Evento>(), "Erro de rede: Verifique sua conexão à internet")
+            }
+        }
+    }
+
+    fun buscarEnderecoPorCep(cep: String, onResult: (Boolean, ViaCepAddressResponse?, String?) -> Unit) {
+        viewModelScope.launch {
+            val normalizedCep = cep.filter { it.isDigit() }.take(8)
+
+            if (normalizedCep.length != 8) {
+                onResult(false, null, "Informe um CEP com 8 números.")
+                return@launch
+            }
+
+            try {
+                val response = ViaCepClient.instance.buscarEndereco(normalizedCep)
+                val body = response.body()
+
+                if (response.isSuccessful && body?.erro != true && body != null) {
+                    onResult(true, body, null)
+                } else {
+                    onResult(false, null, "CEP não encontrado.")
+                }
+            } catch (e: Exception) {
+                onResult(false, null, "Não foi possível consultar o CEP.")
             }
         }
     }

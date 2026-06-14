@@ -98,12 +98,45 @@ fun CriarEventoScreen(
 ) {
     var form by remember { mutableStateOf(EventoForm()) }
     var feedback by remember { mutableStateOf<Pair<Boolean, String>?>(null) }
+    var cepStatus by remember { mutableStateOf<Pair<Boolean, String>?>(null) }
     var isSubmitting by remember { mutableStateOf(false) }
+    val latestFormState = rememberUpdatedState(form)
+    val cepDigits = onlyDigits(form.codigoPostal)
 
     // Lista de eventos da instituição
     var eventos by remember { mutableStateOf<List<Evento>>(emptyList()) }
     var listStatus by remember { mutableStateOf("loading") }   // loading | loaded | error
     var listError by remember { mutableStateOf<String?>(null) }
+
+    LaunchedEffect(cepDigits) {
+        if (cepDigits.length != 8) {
+            cepStatus = null
+            return@LaunchedEffect
+        }
+
+        val requestedCep = cepDigits
+        cepStatus = Pair(true, "Buscando endereço...")
+
+        myViewModel.buscarEnderecoPorCep(requestedCep) { success, address, message ->
+            if (onlyDigits(latestFormState.value.codigoPostal) != requestedCep) {
+                return@buscarEnderecoPorCep
+            }
+
+            if (success && address != null) {
+                val current = latestFormState.value
+                form = current.copy(
+                    codigoPostal = requestedCep,
+                    rua = address.logradouro.orEmpty(),
+                    bairro = address.bairro.orEmpty(),
+                    cidade = address.localidade.orEmpty(),
+                    uf = address.uf.orEmpty(),
+                )
+                cepStatus = Pair(true, "Endereço localizado.")
+            } else {
+                cepStatus = Pair(false, message ?: "CEP não encontrado.")
+            }
+        }
+    }
 
     // Adicione um tratamento de erro global no loadMeusEventos dentro da CriarEventoScreen
     fun loadMeusEventos() {
@@ -182,13 +215,13 @@ fun CriarEventoScreen(
             "horaInicio"         -> form.copy(horaInicio = value)
             "dataFim"            -> form.copy(dataFim = value)
             "horaFim"            -> form.copy(horaFim = value)
-            "codigoPostal"       -> form.copy(codigoPostal = value)
+            "codigoPostal"       -> form.copy(codigoPostal = onlyDigits(value).take(8))
             "rua"                -> form.copy(rua = value)
             "numero"             -> form.copy(numero = value)
             "complemento"        -> form.copy(complemento = value)
             "bairro"             -> form.copy(bairro = value)
             "cidade"             -> form.copy(cidade = value)
-            "uf"                 -> form.copy(uf = value.take(2))
+            "uf"                 -> form.copy(uf = value.uppercase().take(2))
             else                 -> form
         }
         feedback = null
@@ -460,6 +493,7 @@ fun CriarEventoScreen(
                                 placeholder = "SP",
                             )
                         }
+                        CepStatusText(cepStatus)
                         CheerTextField(
                             label = "Rua *",
                             value = form.rua,
@@ -712,6 +746,18 @@ private fun EventoDetailRow(label: String, value: String) {
             text = value,
             style = MaterialTheme.typography.bodySmall,
             color = CheerMutedText,
+        )
+    }
+}
+
+@Composable
+private fun CepStatusText(status: Pair<Boolean, String>?) {
+    status?.let { (success, message) ->
+        Text(
+            text = message,
+            color = if (success) Color(0xFF2E7D32) else Color(0xFFC62828),
+            style = MaterialTheme.typography.bodySmall,
+            modifier = Modifier.padding(bottom = 12.dp),
         )
     }
 }
