@@ -38,7 +38,9 @@ fun LoginScreen(
     onNavigateToInstitutionRegister: () -> Unit,
     onNavigateToVolunteerRegister: () -> Unit,
     errorMessage: String? = null,
+    noticeMessage: String? = null,
     onClearError: () -> Unit = {},
+    onClearNotice: () -> Unit = {},
 ) {
     val clipboardManager = LocalClipboardManager.current
 
@@ -176,6 +178,34 @@ fun LoginScreen(
                                     TextButton(onClick = onClearError) {
                                         Text("Fechar")
                                     }
+                                }
+                            }
+                        }
+                    }
+
+                    noticeMessage?.let { message ->
+                        Spacer(modifier = Modifier.height(16.dp))
+                        Surface(
+                            modifier = Modifier.fillMaxWidth(),
+                            shape = RoundedCornerShape(12.dp),
+                            color = Color(0xFFE8F5E9),
+                        ) {
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(12.dp),
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.SpaceBetween,
+                            ) {
+                                Text(
+                                    text = message,
+                                    color = Color(0xFF1B5E20),
+                                    style = MaterialTheme.typography.bodySmall,
+                                    fontWeight = FontWeight.SemiBold,
+                                    modifier = Modifier.weight(1f),
+                                )
+                                TextButton(onClick = onClearNotice) {
+                                    Text("Fechar")
                                 }
                             }
                         }

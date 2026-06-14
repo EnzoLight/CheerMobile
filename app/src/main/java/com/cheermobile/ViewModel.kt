@@ -55,8 +55,8 @@ class MyViewModel : ViewModel() {
             try {
                 val response = RetrofitClient.instance.registerInstituicao(request)
                 if (response.isSuccessful) {
-                    // Se a API retornar 201 (Created), o cadastro foi um sucesso
-                    onResult(true, "Instituição cadastrada! Bem-vindo.")
+                // Se a API retornar 201 (Created), o cadastro foi um sucesso
+                    onResult(true, "Instituição cadastrada. Faça login para acessar sua conta.")
                 } else {
                     val errorMsg = response.errorBody()?.string() ?: "Erro desconhecido"
                     onResult(false, "Falha no cadastro: $errorMsg")
@@ -76,8 +76,8 @@ class MyViewModel : ViewModel() {
         viewModelScope.launch {
             try {
                 val response = RetrofitClient.instance.registerVoluntario(request)
-                if (response.isSuccessful) {
-                    onResult(true, "Cadastro realizado com sucesso!")
+            if (response.isSuccessful) {
+                    onResult(true, "Cadastro realizado com sucesso. Faça login para acessar sua conta.")
                 } else {
                     val errorMsg = response.errorBody()?.string() ?: "Erro desconhecido"
                     onResult(false, "Erro no registro: $errorMsg")
@@ -93,7 +93,11 @@ class MyViewModel : ViewModel() {
         try {
             val response = RetrofitClient.instance.createEvento(request)
             if (response.isSuccessful) {
-                onResult(true, response.body()?.message ?: "Evento criado com sucesso.")
+                val eventId = response.body()?.data?.id
+                val message = response.body()?.message
+                    ?: eventId?.let { "Evento criado com sucesso. ID: $it." }
+                    ?: "Evento criado com sucesso."
+                onResult(true, message)
             } else {
                 onResult(false, "Erro ao criar evento: ${response.errorBody()?.string()}")
             }

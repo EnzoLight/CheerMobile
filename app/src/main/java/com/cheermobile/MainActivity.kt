@@ -72,6 +72,7 @@ class MainActivity : ComponentActivity() {
                 var currentScreen by rememberSaveable { mutableStateOf("login") }
                 var authenticatedUserType by rememberSaveable { mutableStateOf<String?>(null) }
                 var authErrorMessage by remember { mutableStateOf<String?>(null) }
+                var authNoticeMessage by remember { mutableStateOf<String?>(null) }
                 var profile by remember { mutableStateOf<UserProfileData?>(null) }
                 var profileLoading by remember { mutableStateOf(false) }
                 var profileError by remember { mutableStateOf<String?>(null) }
@@ -280,12 +281,23 @@ class MainActivity : ComponentActivity() {
                             "login" -> LoginScreen(
                                 onLoginExternalClick = {
                                     authErrorMessage = null
+                                    authNoticeMessage = null
                                     currentScreen = "login_webview"
                                 },
-                                onNavigateToInstitutionRegister = { currentScreen = "cadastro_instituicao" },
-                                onNavigateToVolunteerRegister = { currentScreen = "cadastro_voluntario" },
+                                onNavigateToInstitutionRegister = {
+                                    authErrorMessage = null
+                                    authNoticeMessage = null
+                                    currentScreen = "cadastro_instituicao"
+                                },
+                                onNavigateToVolunteerRegister = {
+                                    authErrorMessage = null
+                                    authNoticeMessage = null
+                                    currentScreen = "cadastro_voluntario"
+                                },
                                 errorMessage = authErrorMessage,
+                                noticeMessage = authNoticeMessage,
                                 onClearError = { authErrorMessage = null },
+                                onClearNotice = { authNoticeMessage = null },
                             )
 
                             "login_webview" -> LoginWebViewScreen(
@@ -397,19 +409,21 @@ class MainActivity : ComponentActivity() {
 
                             "cadastro_instituicao" -> CadastroInstituicaoScreen(
                                 onBackClick = { currentScreen = "login" },
-                                onSuccessNavigate = {
-                                    authenticatedUserType = "instituicao"
-                                    currentScreen = "dashboard"
-                                    refreshProfile()
+                                onSuccessNavigate = { message ->
+                                    clearAuthenticatedState()
+                                    authErrorMessage = null
+                                    authNoticeMessage = message
+                                    currentScreen = "login"
                                 },
                             )
 
                             "cadastro_voluntario" -> CadastroVoluntarioScreen(
                                 onBackClick = { currentScreen = "login" },
-                                onSuccessNavigate = {
-                                    authenticatedUserType = "voluntario"
-                                    currentScreen = "eventos"
-                                    refreshProfile()
+                                onSuccessNavigate = { message ->
+                                    clearAuthenticatedState()
+                                    authErrorMessage = null
+                                    authNoticeMessage = message
+                                    currentScreen = "login"
                                 },
                             )
 

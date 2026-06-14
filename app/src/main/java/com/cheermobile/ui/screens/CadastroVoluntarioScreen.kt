@@ -28,7 +28,7 @@ import com.cheermobile.ui.theme.*
 @Composable
 fun CadastroVoluntarioScreen(
     onBackClick: () -> Unit,
-    onSuccessNavigate: () -> Unit,
+    onSuccessNavigate: (String) -> Unit,
     myViewModel: MyViewModel = viewModel()
 ) {
     var nome by remember { mutableStateOf("") }
@@ -156,7 +156,7 @@ fun CadastroVoluntarioScreen(
 
                             myViewModel.registerNewVoluntario(request) { success, message ->
                                 isSubmitting = false
-                                if (success) onSuccessNavigate()
+                                if (success) onSuccessNavigate(message)
                                 else feedbackMessage = message
                             }
                         },

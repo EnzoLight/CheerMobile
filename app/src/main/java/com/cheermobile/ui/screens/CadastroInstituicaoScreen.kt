@@ -73,7 +73,7 @@ private val currentYear = java.util.Calendar.getInstance().get(java.util.Calenda
 @Composable
 fun CadastroInstituicaoScreen(
     onBackClick: () -> Unit = {},
-    onSuccessNavigate: () -> Unit = {},
+    onSuccessNavigate: (String) -> Unit = {},
     myViewModel: MyViewModel = viewModel(),
 ) {
     var form by remember { mutableStateOf(CadastroInstituicaoForm()) }
@@ -180,7 +180,7 @@ fun CadastroInstituicaoScreen(
 
             if (success) {
                 form = CadastroInstituicaoForm() // Limpa os campos após o sucesso
-                onSuccessNavigate() // Dispara a navegação (que vai te levar para "criar_evento" via MainActivity)
+                onSuccessNavigate(message)
             }
         }
     }

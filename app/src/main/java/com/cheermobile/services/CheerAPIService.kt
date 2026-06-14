@@ -15,6 +15,7 @@ import com.cheermobile.models.AuthResponse
 import com.cheermobile.models.CreateEventoRequest
 import com.cheermobile.models.CreateEventoResponse
 import com.cheermobile.models.EventosResponse
+import com.cheermobile.models.IdResponse
 import com.cheermobile.models.MeusEventosResponse
 import com.cheermobile.models.MobileExchangeRequest
 import com.cheermobile.models.RegisterInstituicaoRequest
@@ -53,7 +54,7 @@ interface CheerApiService {
     suspend fun getEventos(@QueryMap filters: Map<String, String> = emptyMap()): Response<EventosResponse>
 
     @POST("eventos")
-    suspend fun createEvento(@Body request: CreateEventoRequest): Response<CreateEventoResponse>
+    suspend fun createEvento(@Body request: CreateEventoRequest): Response<IdResponse>
 
     @GET("eventos/{id}")
     suspend fun getEvento(@Path("id") id: Int): Response<CreateEventoResponse>

@@ -25,9 +25,8 @@ import com.cheermobile.models.CreateEventoRequest
 import com.cheermobile.models.Evento
 import com.cheermobile.models.EnderecoRequest
 import com.cheermobile.ui.theme.*
-import java.time.LocalDate
 import java.time.LocalDateTime
-import java.time.ZoneOffset
+import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 
 // ---------------------------------------------------------------------------
@@ -68,18 +67,21 @@ private fun todayString(): String {
     return String.format("%04d-%02d-%02d", year, month, day)
 }
 
-
-/** Monta datetime com offset local, ex: "2025-06-10T14:00:00-03:00" */
-private fun toApiDateTime(date: String, time: String): String? {
+private fun parseFormDateTime(date: String, time: String): LocalDateTime? {
     if (date.isBlank() || time.isBlank()) return null
+
     return try {
-        val localDt = LocalDateTime.parse("${date}T${time}:00")
-        val zoneOffset = ZoneOffset.systemDefault().rules.getOffset(localDt)
-        val offsetStr = zoneOffset.toString().let { if (it == "Z") "+00:00" else it }
-        "${date}T${time}:00$offsetStr"
+        LocalDateTime.parse("${date.trim()}T${time.trim()}:00")
     } catch (e: Exception) {
         null
     }
+}
+
+/** Monta datetime com offset local, ex: "2025-06-10T14:00:00-03:00" */
+private fun toApiDateTime(localDt: LocalDateTime): String {
+    val zoneOffset = ZoneId.systemDefault().rules.getOffset(localDt)
+    val offsetStr = zoneOffset.toString().let { if (it == "Z") "+00:00" else it }
+    return "${localDt.format(DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss"))}$offsetStr"
 }
 
 // ---------------------------------------------------------------------------
@@ -193,52 +195,77 @@ fun CriarEventoScreen(
     }
 
     fun handleSubmit() {
-        val dataHoraInicio = toApiDateTime(form.dataInicio, form.horaInicio)
-        val dataHoraTermino = toApiDateTime(form.dataFim, form.horaFim)
+        val titulo = form.titulo.trim()
+        val tipoEvento = form.tipoEvento.trim()
+        val maxVoluntarios = form.numMaxVoluntarios.trim().takeIf { it.isNotBlank() }?.toIntOrNull()
+        val inicio = parseFormDateTime(form.dataInicio, form.horaInicio)
+        val termino = parseFormDateTime(form.dataFim, form.horaFim)
+        val cep = onlyDigits(form.codigoPostal)
+        val uf = form.uf.trim().uppercase()
 
-        // Validações (espelham o JS)
-        if (dataHoraInicio == null) {
-            feedback = Pair(false, "Informe data e hora de início válidas.")
+        if (titulo.isBlank()) {
+            feedback = Pair(false, "Informe o título do evento.")
             return
         }
-        if (LocalDateTime.parse(dataHoraInicio.substringBefore("+").substringBefore("-", "").let {
-                // pega a parte antes do offset
-                dataHoraInicio.take(19)
-            }).isBefore(LocalDateTime.now())) {
+        if (tipoEvento.isBlank()) {
+            feedback = Pair(false, "Selecione o tipo do evento.")
+            return
+        }
+        if (form.numMaxVoluntarios.isNotBlank() && (maxVoluntarios == null || maxVoluntarios <= 0)) {
+            feedback = Pair(false, "Informe uma quantidade de voluntários maior que zero.")
+            return
+        }
+        if (inicio == null) {
+            feedback = Pair(false, "Informe data e hora de início no formato 2026-06-13 e 14:00.")
+            return
+        }
+        if (inicio.isBefore(LocalDateTime.now())) {
             feedback = Pair(false, "A data de início não pode ser anterior ao momento atual.")
             return
         }
-        if ((form.dataFim.isNotBlank() || form.horaFim.isNotBlank()) && dataHoraTermino == null) {
+        if ((form.dataFim.isNotBlank() || form.horaFim.isNotBlank()) && termino == null) {
             feedback = Pair(false, "Informe data e hora de fim ou deixe ambos em branco.")
             return
         }
-        if (dataHoraTermino != null &&
-            !LocalDateTime.parse(dataHoraTermino.take(19))
-                .isAfter(LocalDateTime.parse(dataHoraInicio.take(19)))
-        ) {
+        if (termino != null && !termino.isAfter(inicio)) {
             feedback = Pair(false, "A data de fim precisa ser posterior ao início.")
             return
         }
+        if (cep.isBlank()) {
+            feedback = Pair(false, "Informe o CEP do evento.")
+            return
+        }
+        if (uf.length != 2) {
+            feedback = Pair(false, "Informe a UF com 2 letras.")
+            return
+        }
+        if (form.rua.isBlank() || form.bairro.isBlank() || form.cidade.isBlank()) {
+            feedback = Pair(false, "Preencha rua, bairro e cidade do evento.")
+            return
+        }
+
+        val dataHoraInicio = toApiDateTime(inicio)
+        val dataHoraTermino = termino?.let { toApiDateTime(it) }
 
         isSubmitting = true
         feedback = null
 
         val request = CreateEventoRequest(
-            titulo            = form.titulo.trim(),
-            tipoEvento        = form.tipoEvento,
+            titulo            = titulo,
+            tipoEvento        = tipoEvento,
             constancia        = form.constancia.ifBlank { null },
             descricao         = form.descricao.trim().ifBlank { null },
-            numMaxVoluntarios = form.numMaxVoluntarios.toIntOrNull(),
+            numMaxVoluntarios = maxVoluntarios,
             dataHoraInicio    = dataHoraInicio,
             dataHoraTermino   = dataHoraTermino,
             endereco = EnderecoRequest(
                 rua          = form.rua.trim(),
-                numero       = form.numero.trim(),
+                numero       = form.numero.trim().ifBlank { "S/N" },
                 complemento  = form.complemento.trim(),
                 bairro       = form.bairro.trim(),
                 cidade       = form.cidade.trim(),
-                uf           = form.uf.trim().uppercase(),
-                codigoPostal = onlyDigits(form.codigoPostal),
+                uf           = uf,
+                codigoPostal = cep,
             ),
         )
 

@@ -46,8 +46,19 @@ data class CreateEventoRequest(
 )
  
 data class CreateEventoResponse(
-    val message: String,
-    val data: Evento?,
+    val status: String? = null,
+    val message: String? = null,
+    val data: Evento? = null,
+)
+
+data class IdData(
+    val id: Int? = null,
+)
+
+data class IdResponse(
+    val status: String? = null,
+    val message: String? = null,
+    val data: IdData? = null,
 )
  
  // Lista de meus Eventos
