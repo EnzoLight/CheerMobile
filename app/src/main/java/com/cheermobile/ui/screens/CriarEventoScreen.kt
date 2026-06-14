@@ -1,6 +1,7 @@
 package com.cheermobile.ui.screens
 
 import android.app.TimePickerDialog
+import android.app.DatePickerDialog
 import android.text.format.DateFormat
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.*
@@ -11,6 +12,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccessTime
 import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.CalendarMonth
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.Save
 import androidx.compose.material3.*
@@ -30,6 +32,7 @@ import com.cheermobile.models.CreateEventoRequest
 import com.cheermobile.models.Evento
 import com.cheermobile.models.EnderecoRequest
 import com.cheermobile.ui.theme.*
+import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
@@ -83,6 +86,16 @@ private fun parseHourMinute(value: String): Pair<Int, Int>? {
 }
 
 private fun formatHourMinute(hour: Int, minute: Int): String = String.format("%02d:%02d", hour, minute)
+
+private fun parseFormDate(value: String): LocalDate? {
+    if (value.isBlank()) return null
+
+    return try {
+        LocalDate.parse(value.trim())
+    } catch (e: Exception) {
+        null
+    }
+}
 
 private fun todayString(): String {
     val calendar = java.util.Calendar.getInstance()
@@ -459,12 +472,11 @@ fun CriarEventoScreen(
                         // Datas
                         val today = todayString()
                         Column(verticalArrangement = Arrangement.spacedBy(0.dp)) {
-                            CheerTextField(
+                            CheerDateField(
                                 label = "Data de início *",
                                 value = form.dataInicio,
-                                onValueChange = { updateField("dataInicio", it) },
                                 placeholder = today,
-                                keyboardType = KeyboardType.Number,
+                                onValueChange = { updateField("dataInicio", it) },
                             )
                             CheerTimeField(
                                 label = "Hora de início *",
@@ -474,12 +486,12 @@ fun CriarEventoScreen(
                             )
                         }
                         Column(verticalArrangement = Arrangement.spacedBy(0.dp)) {
-                            CheerTextField(
+                            CheerDateField(
                                 label = "Data de fim",
                                 value = form.dataFim,
-                                onValueChange = { updateField("dataFim", it) },
                                 placeholder = today,
-                                keyboardType = KeyboardType.Number,
+                                onValueChange = { updateField("dataFim", it) },
+                                optional = true,
                             )
                             CheerTimeField(
                                 label = "Hora de fim",
@@ -783,6 +795,73 @@ private fun CepStatusText(status: Pair<Boolean, String>?) {
             style = MaterialTheme.typography.bodySmall,
             modifier = Modifier.padding(bottom = 12.dp),
         )
+    }
+}
+
+@Composable
+private fun CheerDateField(
+    modifier: Modifier = Modifier,
+    label: String,
+    value: String,
+    placeholder: String,
+    onValueChange: (String) -> Unit,
+    optional: Boolean = false,
+) {
+    val context = LocalContext.current
+
+    fun showPicker() {
+        val selectedDate = parseFormDate(value)
+        val initialDate = selectedDate ?: LocalDate.now()
+
+        DatePickerDialog(
+            context,
+            { _, year, month, day ->
+                onValueChange(LocalDate.of(year, month + 1, day).format(DateTimeFormatter.ISO_LOCAL_DATE))
+            },
+            initialDate.year,
+            initialDate.monthValue - 1,
+            initialDate.dayOfMonth,
+        ).show()
+    }
+
+    Column(modifier = modifier.padding(bottom = 12.dp)) {
+        Text(label, style = MaterialTheme.typography.labelMedium, color = CheerText, fontWeight = FontWeight.Medium)
+        Spacer(Modifier.height(4.dp))
+        OutlinedButton(
+            onClick = { showPicker() },
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(56.dp),
+            shape = RoundedCornerShape(10.dp),
+            border = BorderStroke(1.dp, CheerBrandBorder),
+            colors = ButtonDefaults.outlinedButtonColors(
+                containerColor = CheerSurface,
+                contentColor = CheerText,
+            ),
+            contentPadding = PaddingValues(horizontal = 14.dp),
+        ) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                Icon(Icons.Default.CalendarMonth, contentDescription = null, tint = CheerPrimary)
+                Spacer(Modifier.width(10.dp))
+                Text(
+                    text = value.ifBlank { placeholder },
+                    color = if (value.isBlank()) CheerMutedText else CheerText,
+                    modifier = Modifier.weight(1f),
+                )
+            }
+        }
+        if (optional && value.isNotBlank()) {
+            TextButton(
+                onClick = { onValueChange("") },
+                modifier = Modifier.align(Alignment.End),
+                contentPadding = PaddingValues(horizontal = 8.dp),
+            ) {
+                Text("Limpar")
+            }
+        }
     }
 }
 
